@@ -8,6 +8,7 @@ SESS_TARGET := $(BUILD_DIR)/session_manager
 UM_TARGET := $(BUILD_DIR)/user_manager
 PM_TARGET := $(BUILD_DIR)/permission_manager
 CS_TARGET := $(BUILD_DIR)/configuration_service
+LS_TARGET := $(BUILD_DIR)/logging_service
 
 CC := gcc
 CXX := g++
@@ -16,7 +17,7 @@ CXXFLAGS := -Wall -Wextra -static -O2 -std=c++17
 
 .PHONY: all clean
 
-all: $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET)
+all: $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET) $(LS_TARGET)
 
 $(INIT_TARGET): init.c
 	@mkdir -p $(BUILD_DIR)
@@ -53,5 +54,10 @@ $(CS_TARGET): configuration_service.cpp
 	@echo "[*] Compiling C++ Configuration Service..."
 	$(CXX) $(CXXFLAGS) -o $(CS_TARGET) configuration_service.cpp
 
+$(LS_TARGET): logging_service.cpp
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Logging Service..."
+	$(CXX) $(CXXFLAGS) -o $(LS_TARGET) logging_service.cpp
+
 clean:
-	@rm -f $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET)
+	@rm -f $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET) $(LS_TARGET)
