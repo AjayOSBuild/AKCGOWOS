@@ -58,3 +58,16 @@ To fulfill Phase 4 requirements, every Ring 3 core daemon (e.g., DeviceManager, 
     *   **Emitted when:** The service transitions between operational states, notifying the master Service Manager.
 *   `ErrorEncountered(Int32 code, String message)`
     *   **Emitted when:** A non-fatal internal error occurs, allowing the centralized Logging Service to instantly capture and structure the failure.
+
+## 3. Storage Manager API
+
+**Interface:** `os.core.StorageManager`
+**Object Path:** `/os/core/StorageManager`
+
+Abstracts raw filesystem mounts and block device manipulation.
+
+### Methods
+
+*   `Mount(String devicePath, String mountPoint, String fsType, String options) -> Boolean`
+    *   **Description:** Securely requests the kernel to mount a block device. Enforces path traversal protections to ensure targets are within authorized `/mnt` or `~/.local` boundaries.
+    *   **Returns:** True on success, False if the filesystem is unsupported or corrupted.
