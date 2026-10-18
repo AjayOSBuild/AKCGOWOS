@@ -125,3 +125,19 @@ Manages cached image and document previews to accelerate File Explorer grid rend
 *   `GetThumbnail(String filePath) -> String`
     *   **Description:** Checks if a cached preview exists; if not, generates one and returns the path to the thumbnail cache file.
     *   **Returns:** Absolute path to the `.thumb` cache file.
+
+## 8. File Trash and Recovery API
+
+**Interface:** `os.core.FileTrashManager`
+**Object Path:** `/os/core/FileTrashManager`
+
+Manages safe deletion, staging, and restoration of files to prevent accidental data loss.
+
+### Methods
+
+*   `MoveToTrash(String filePath) -> Boolean`
+    *   **Description:** Moves a file or directory to the staging trash directory and records its original path.
+*   `RestoreFromTrash(String uniqueName) -> Boolean`
+    *   **Description:** Restores a trashed item back to its original path using recorded `.trashinfo` metadata.
+*   `EmptyTrash() -> Boolean`
+    *   **Description:** Permanently deletes all items currently stored in the trash directory.

@@ -17,6 +17,7 @@
 #include "file_indexer.h"
 #include "file_metadata.h"
 #include "thumbnail_generator.h"
+#include "file_trash.h"
 
 namespace fs = std::filesystem;
 
@@ -33,7 +34,7 @@ public:
 
 int main() {
     std::cout << "=== OS Project Storage Manager (Ring 3) ===\n";
-    std::cout << "[*] Initializing storage stack and Thumbnail Generator...\n";
+    std::cout << "[*] Initializing storage stack and File Trash Manager...\n";
 
     VFSRegistry registry;
     registry.RegisterFS("ext4", std::make_shared<Ext4FileSystem>());
@@ -44,8 +45,9 @@ int main() {
     FileWatcher watcher;
     FileIndexer indexer;
     ThumbnailGenerator thumbnails;
+    FileTrashManager trashManager;
 
-    std::cout << "[+] Storage Manager active with complete VFS, Indexing, Metadata, and Thumbnail services.\n";
+    std::cout << "[+] Storage Manager active with complete VFS, Indexing, Metadata, Thumbnail, and Trash services.\n";
 
     while (true) {
         watcher.PollEvents([&indexer](const std::string& path, uint32_t mask) {
