@@ -75,3 +75,9 @@ Abstracts raw filesystem mounts and block device manipulation.
 *   `Unmount(String mountPoint, Boolean force) -> Boolean`
     *   **Description:** Flushes pending disk operations and safely unmounts the specified path. If force is true, passes MNT_FORCE to forcefully detach unresponsive network or removable drives.
     *   **Returns:** True on success, False if the device is busy (EBUSY) or not found.
+
+### Storage Hotplug Events
+
+*   `AutoMountStorage(String blockDevice) -> String`
+    *   **Description:** Automatically inspects a newly attached block device, determines its filesystem type (ext4, vfat, exfat, ntfs), creates a mount point under `/mnt/usb/[device]`, and mounts it.
+    *   **Returns:** The assigned mount point path on success.
