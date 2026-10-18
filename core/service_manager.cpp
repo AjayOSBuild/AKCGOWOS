@@ -55,6 +55,7 @@ int main() {
     services.emplace("StorageManager", Service("StorageManager", "/sbin/storage_manager"));
     services.emplace("NetworkManager", Service("NetworkManager", "/sbin/network_manager"));
     services.emplace("UpdateManager", Service("UpdateManager", "/sbin/update_manager"));
+    services.emplace("NotificationService", Service("NotificationService", "/sbin/notification_service"));
     services.emplace("SessionManager", Service("SessionManager", "/sbin/session_manager"));
     services.emplace("UserManager", Service("UserManager", "/sbin/user_manager"));
     services.emplace("PermissionManager", Service("PermissionManager", "/sbin/permission_manager"));
