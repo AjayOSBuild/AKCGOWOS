@@ -55,6 +55,7 @@ int main() {
     services.emplace("SessionManager", Service("SessionManager", "/sbin/session_manager"));
     services.emplace("UserManager", Service("UserManager", "/sbin/user_manager"));
     services.emplace("PermissionManager", Service("PermissionManager", "/sbin/permission_manager"));
+    services.emplace("ConfigurationService", Service("ConfigurationService", "/sbin/configuration_service"));
 
     // Startup phase
     for (auto& pair : services) {

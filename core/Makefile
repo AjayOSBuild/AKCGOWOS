@@ -7,6 +7,7 @@ DM_TARGET := $(BUILD_DIR)/device_manager
 SESS_TARGET := $(BUILD_DIR)/session_manager
 UM_TARGET := $(BUILD_DIR)/user_manager
 PM_TARGET := $(BUILD_DIR)/permission_manager
+CS_TARGET := $(BUILD_DIR)/configuration_service
 
 CC := gcc
 CXX := g++
@@ -15,7 +16,7 @@ CXXFLAGS := -Wall -Wextra -static -O2 -std=c++17
 
 .PHONY: all clean
 
-all: $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET)
+all: $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET)
 
 $(INIT_TARGET): init.c
 	@mkdir -p $(BUILD_DIR)
@@ -47,5 +48,10 @@ $(PM_TARGET): permission_manager.cpp
 	@echo "[*] Compiling C++ Permission Manager..."
 	$(CXX) $(CXXFLAGS) -o $(PM_TARGET) permission_manager.cpp
 
+$(CS_TARGET): configuration_service.cpp
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Configuration Service..."
+	$(CXX) $(CXXFLAGS) -o $(CS_TARGET) configuration_service.cpp
+
 clean:
-	@rm -f $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET)
+	@rm -f $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET)
