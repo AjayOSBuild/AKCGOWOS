@@ -37,17 +37,12 @@ EFI_GRAPHICS_OUTPUT_PROTOCOL* InitGOP() {
     EFI_GUID gopGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
     
     EFI_STATUS status = uefi_call_wrapper(BS->LocateProtocol, 3, &gopGuid, NULL, (void**)&gop);
-    if (EFI_ERROR(status)) {
-        SerialWrite("[!] Error: Could not locate Graphics Output Protocol (GOP).\n");
-        Print(L"[!] Error: GOP not found. QEMU must run with VGA enabled (-vga virtio).\n\r");
-        return NULL;
+    if (!EFI_ERROR(status)) {
+        SerialWrite("[*] Graphics Output Protocol (GOP) Initialized.\n");
+        Print(L"[*] Framebuffer detected: %dx%d\n\r", 
+              gop->Mode->Info->HorizontalResolution, 
+              gop->Mode->Info->VerticalResolution);
     }
-    
-    SerialWrite("[*] Graphics Output Protocol (GOP) Initialized.\n");
-    Print(L"[*] Framebuffer detected: %dx%d\n\r", 
-          gop->Mode->Info->HorizontalResolution, 
-          gop->Mode->Info->VerticalResolution);
-          
     return gop;
 }
 
@@ -66,6 +61,30 @@ EFI_FILE_HANDLE GetVolume(EFI_HANDLE image) {
     return root;
 }
 
+// --- Diagnostics ---
+void RunDiagnostics(EFI_SYSTEM_TABLE *SystemTable) {
+    SerialWrite("[Diag] Running pre-boot diagnostics...\n");
+    
+    Print(L"[*] Firmware Vendor: %s\n\r", SystemTable->FirmwareVendor);
+    Print(L"[*] Firmware Revision: %x\n\r", SystemTable->FirmwareRevision);
+    
+    UINTN MemoryMapSize = 0;
+    EFI_MEMORY_DESCRIPTOR *MemoryMap = NULL;
+    UINTN MapKey, DescriptorSize;
+    UINT32 DescriptorVersion;
+    
+    EFI_STATUS Status = uefi_call_wrapper(BS->GetMemoryMap, 5, &MemoryMapSize, MemoryMap, &MapKey, &DescriptorSize, &DescriptorVersion);
+    
+    // We expect EFI_BUFFER_TOO_SMALL because we passed a 0-size buffer. 
+    // This gives us the exact size needed to allocate the real map later.
+    if (Status == EFI_BUFFER_TOO_SMALL) {
+        SerialWrite("[Diag] Memory map query successful.\n");
+        Print(L"[*] Memory Map Size: %d bytes\n\r", MemoryMapSize);
+    } else {
+        SerialWrite("[Diag] Warning: Unexpected memory map status.\n");
+    }
+}
+
 EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     InitializeLib(ImageHandle, SystemTable);
     SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
@@ -74,29 +93,26 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     SerialWrite("\n\n=== OS Project UEFI Bootloader ===\n");
     Print(L"=== OS Project UEFI Bootloader ===\n\r");
     
-    // 1. Initialize Framebuffer
-    EFI_GRAPHICS_OUTPUT_PROTOCOL *Gop = InitGOP();
+    // Run hardware/memory diagnostics
+    RunDiagnostics(SystemTable);
+    
+    InitGOP();
 
-    // 2. Mount Boot Partition
     EFI_FILE_HANDLE Volume = GetVolume(ImageHandle);
     if (!Volume) {
-        SerialWrite("[!] Error: Could not mount EFI System Partition.\n");
+        SerialWrite("[!] Error: Could not mount EFI partition.\n");
         return EFI_LOAD_ERROR;
     }
 
-    // 3. Locate Kernel
     EFI_FILE_HANDLE KernelFile;
-    EFI_STATUS Status = uefi_call_wrapper(Volume->Open, 5, Volume, &KernelFile, L"EFI\\BOOT\\bzImage", EFI_FILE_MODE_READ, EFI_FILE_READ_ONLY);
-    if (!EFI_ERROR(Status)) {
+    if (!EFI_ERROR(uefi_call_wrapper(Volume->Open, 5, Volume, &KernelFile, L"EFI\\BOOT\\bzImage", EFI_FILE_MODE_READ, EFI_FILE_READ_ONLY))) {
         SerialWrite("[*] Kernel file located.\n");
         Print(L"[*] Kernel file located.\n\r");
         uefi_call_wrapper(KernelFile->Close, 1, KernelFile);
     }
 
-    // 4. Parse Command Line
     EFI_FILE_HANDLE ConfigFile;
-    Status = uefi_call_wrapper(Volume->Open, 5, Volume, &ConfigFile, L"EFI\\BOOT\\boot.cfg", EFI_FILE_MODE_READ, EFI_FILE_READ_ONLY);
-    if (!EFI_ERROR(Status)) {
+    if (!EFI_ERROR(uefi_call_wrapper(Volume->Open, 5, Volume, &ConfigFile, L"EFI\\BOOT\\boot.cfg", EFI_FILE_MODE_READ, EFI_FILE_READ_ONLY))) {
         UINTN BufferSize = 512;
         CHAR8 Buffer[512];
         uefi_call_wrapper(ConfigFile->Read, 3, ConfigFile, &BufferSize, Buffer);
@@ -111,25 +127,17 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
                 break;
             }
         }
-        
         if (cmd_start) {
             for (UINTN i = 0; cmd_start[i] != '\0'; i++) {
-                if (cmd_start[i] == '\n' || cmd_start[i] == '\r') {
-                    cmd_start[i] = '\0';
-                    break;
-                }
+                if (cmd_start[i] == '\n' || cmd_start[i] == '\r') { cmd_start[i] = '\0'; break; }
             }
             SerialWrite("[+] Command Line Extracted.\n");
-            Print(L"[+] Command Line Extracted: %a\n\r", cmd_start);
         }
         uefi_call_wrapper(ConfigFile->Close, 1, ConfigFile);
     }
 
     SerialWrite("[*] Halting CPU...\n");
-    Print(L"[*] Halting CPU...\n\r");
-    while (1) {
-        __asm__ __volatile__("hlt");
-    }
+    while (1) { __asm__ __volatile__("hlt"); }
 
     return EFI_SUCCESS;
 }
