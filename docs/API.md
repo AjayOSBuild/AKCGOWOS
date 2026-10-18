@@ -71,3 +71,7 @@ Abstracts raw filesystem mounts and block device manipulation.
 *   `Mount(String devicePath, String mountPoint, String fsType, String options) -> Boolean`
     *   **Description:** Securely requests the kernel to mount a block device. Enforces path traversal protections to ensure targets are within authorized `/mnt` or `~/.local` boundaries.
     *   **Returns:** True on success, False if the filesystem is unsupported or corrupted.
+
+*   `Unmount(String mountPoint, Boolean force) -> Boolean`
+    *   **Description:** Flushes pending disk operations and safely unmounts the specified path. If force is true, passes MNT_FORCE to forcefully detach unresponsive network or removable drives.
+    *   **Returns:** True on success, False if the device is busy (EBUSY) or not found.

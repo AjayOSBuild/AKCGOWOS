@@ -16,18 +16,32 @@ public:
     }
 };
 
-// Mount Service Module
+// Mount & Unmount Service Module
 class MountService {
 public:
     bool MountDevice(const std::string& source, const std::string& target, const std::string& fstype, unsigned long flags = 0, const std::string& data = "") {
         std::cout << "[StorageManager] Attempting to mount " << source << " to " << target << " (" << fstype << ")...\n";
         
-        // Wrap the raw Linux mount syscall
         if (mount(source.c_str(), target.c_str(), fstype.c_str(), flags, data.empty() ? nullptr : data.c_str()) == 0) {
             std::cout << "[+] Successfully mounted " << source << " at " << target << "\n";
             return true;
         } else {
             std::cerr << "[!] Mount failed for " << source << ": " << std::strerror(errno) << "\n";
+            return false;
+        }
+    }
+
+    bool UnmountDevice(const std::string& target, bool force = false) {
+        std::cout << "[StorageManager] Attempting to unmount " << target << "...\n";
+        
+        int flags = force ? MNT_FORCE : 0;
+        
+        // umount2 allows passing flags like MNT_FORCE or MNT_DETACH
+        if (umount2(target.c_str(), flags) == 0) {
+            std::cout << "[+] Successfully unmounted " << target << "\n";
+            return true;
+        } else {
+            std::cerr << "[!] Unmount failed for " << target << ": " << std::strerror(errno) << "\n";
             return false;
         }
     }
@@ -41,11 +55,11 @@ int main() {
     std::cout << "[*] Initializing Virtual Filesystem (VFS) abstraction layer...\n";
 
     MountService mounter;
-    std::cout << "[*] Mount service initialized and ready.\n";
+    std::cout << "[*] Mount/Unmount service initialized and ready.\n";
 
-    std::cout << "[+] Storage Manager active. Ready to orchestrate mounts...\n";
+    std::cout << "[+] Storage Manager active. Ready to orchestrate storage volumes...\n";
 
-    // In future phases, this daemon will listen on D-Bus for Mount() API calls
+    // In future phases, this daemon will listen on D-Bus for Mount() and Unmount() API calls
     while (true) {
         std::this_thread::sleep_for(std::chrono::seconds(10));
     }
