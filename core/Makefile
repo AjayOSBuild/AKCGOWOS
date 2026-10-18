@@ -3,6 +3,7 @@
 BUILD_DIR := ../build
 INIT_TARGET := $(BUILD_DIR)/init
 SM_TARGET := $(BUILD_DIR)/service_manager
+DM_TARGET := $(BUILD_DIR)/device_manager
 
 CC := gcc
 CXX := g++
@@ -11,7 +12,7 @@ CXXFLAGS := -Wall -Wextra -static -O2 -std=c++17
 
 .PHONY: all clean
 
-all: $(INIT_TARGET) $(SM_TARGET)
+all: $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET)
 
 $(INIT_TARGET): init.c
 	@mkdir -p $(BUILD_DIR)
@@ -23,5 +24,10 @@ $(SM_TARGET): service_manager.cpp
 	@echo "[*] Compiling C++ Service Manager..."
 	$(CXX) $(CXXFLAGS) -o $(SM_TARGET) service_manager.cpp
 
+$(DM_TARGET): device_manager.cpp
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Device Manager..."
+	$(CXX) $(CXXFLAGS) -o $(DM_TARGET) device_manager.cpp
+
 clean:
-	@rm -f $(INIT_TARGET) $(SM_TARGET)
+	@rm -f $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET)

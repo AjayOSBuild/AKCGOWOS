@@ -50,7 +50,7 @@ int main() {
     std::map<std::string, Service> services;
 
     // Define core service placeholders for Phase 4 validation
-    services.emplace("DeviceManager", Service("DeviceManager", "echo 'DeviceManager mock running' && sleep 3600"));
+    services.emplace("DeviceManager", Service("DeviceManager", "/sbin/device_manager"));
     services.emplace("LoggingService", Service("LoggingService", "echo 'LoggingService mock running' && sleep 3600"));
 
     // Startup phase
