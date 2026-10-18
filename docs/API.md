@@ -112,3 +112,16 @@ Provides rapid substring lookup across indexed filesystem directories.
 *   `SearchFiles(String query) -> Array<String>`
     *   **Description:** Performs a fast in-memory cache search for filenames matching the query string.
     *   **Returns:** Array of matching absolute file paths.
+
+## 7. Thumbnail Generator API
+
+**Interface:** `os.core.ThumbnailGenerator`
+**Object Path:** `/os/core/ThumbnailGenerator`
+
+Manages cached image and document previews to accelerate File Explorer grid rendering.
+
+### Methods
+
+*   `GetThumbnail(String filePath) -> String`
+    *   **Description:** Checks if a cached preview exists; if not, generates one and returns the path to the thumbnail cache file.
+    *   **Returns:** Absolute path to the `.thumb` cache file.

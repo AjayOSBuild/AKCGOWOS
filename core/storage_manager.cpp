@@ -15,6 +15,8 @@
 #include "fs_ntfs.h"
 #include "file_watcher.h"
 #include "file_indexer.h"
+#include "file_metadata.h"
+#include "thumbnail_generator.h"
 
 namespace fs = std::filesystem;
 
@@ -31,7 +33,7 @@ public:
 
 int main() {
     std::cout << "=== OS Project Storage Manager (Ring 3) ===\n";
-    std::cout << "[*] Initializing block device tracking and File Indexer...\n";
+    std::cout << "[*] Initializing storage stack and Thumbnail Generator...\n";
 
     VFSRegistry registry;
     registry.RegisterFS("ext4", std::make_shared<Ext4FileSystem>());
@@ -41,15 +43,12 @@ int main() {
 
     FileWatcher watcher;
     FileIndexer indexer;
+    ThumbnailGenerator thumbnails;
 
-    // Index default storage paths
-    indexer.IndexDirectory("/mnt/usb");
-
-    std::cout << "[+] Storage Manager active with real-time File Watcher and File Indexer.\n";
+    std::cout << "[+] Storage Manager active with complete VFS, Indexing, Metadata, and Thumbnail services.\n";
 
     while (true) {
         watcher.PollEvents([&indexer](const std::string& path, uint32_t mask) {
-            std::cout << "[FileWatcher Event] Path changed: " << path << "\n";
             if (mask & IN_CREATE || mask & IN_MOVED_TO) {
                 indexer.AddPath(path);
             } else if (mask & IN_DELETE || mask & IN_MOVED_FROM) {
