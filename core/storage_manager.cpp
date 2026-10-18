@@ -13,6 +13,7 @@
 #include "fs_fat32.h"
 #include "fs_exfat.h"
 #include "fs_ntfs.h"
+#include "file_watcher.h"
 
 namespace fs = std::filesystem;
 
@@ -25,66 +26,11 @@ public:
         filesystems[type] = fs;
         std::cout << "  - Registered filesystem handler: " << type << "\n";
     }
-    
-    std::shared_ptr<IVirtualFileSystem> GetFS(const std::string& type) {
-        if (filesystems.find(type) != filesystems.end()) {
-            return filesystems[type];
-        }
-        return nullptr;
-    }
-};
-
-// Access Control Guard
-class VFSAuthorizer {
-public:
-    static bool CheckReadAccess(const VFSFile& file, uint32_t uid) {
-        // Root (UID 0) bypasses standard restrictions
-        if (uid == 0) return true;
-        if (file.perms.uid == uid && file.perms.allow_read) return true;
-        // Default fallback policy
-        return file.perms.allow_read;
-    }
-
-    static bool CheckWriteAccess(const VFSFile& file, uint32_t uid) {
-        if (uid == 0) return true;
-        if (file.perms.uid == uid && file.perms.allow_write) return true;
-        return false;
-    }
-};
-
-// Mount & Unmount Service Module
-class MountService {
-public:
-    bool MountDevice(const std::string& source, const std::string& target, const std::string& fstype, unsigned long flags = 0, const std::string& data = "") {
-        std::cout << "[StorageManager] Attempting to mount " << source << " to " << target << " (" << fstype << ")...\n";
-        std::error_code ec;
-        fs::create_directories(target, ec);
-
-        if (mount(source.c_str(), target.c_str(), fstype.c_str(), flags, data.empty() ? nullptr : data.c_str()) == 0) {
-            std::cout << "[+] Successfully mounted " << source << " at " << target << "\n";
-            return true;
-        } else {
-            std::cerr << "[!] Mount failed for " << source << ": " << std::strerror(errno) << "\n";
-            return false;
-        }
-    }
-
-    bool UnmountDevice(const std::string& target, bool force = false) {
-        std::cout << "[StorageManager] Attempting to unmount " << target << "...\n";
-        int flags = force ? MNT_FORCE : 0;
-        if (umount2(target.c_str(), flags) == 0) {
-            std::cout << "[+] Successfully unmounted " << target << "\n";
-            return true;
-        } else {
-            std::cerr << "[!] Unmount failed for " << target << ": " << std::strerror(errno) << "\n";
-            return false;
-        }
-    }
 };
 
 int main() {
     std::cout << "=== OS Project Storage Manager (Ring 3) ===\n";
-    std::cout << "[*] Initializing block device tracking and VFS permissions...\n";
+    std::cout << "[*] Initializing block device tracking and File Watcher...\n";
 
     VFSRegistry registry;
     registry.RegisterFS("ext4", std::make_shared<Ext4FileSystem>());
@@ -92,11 +38,18 @@ int main() {
     registry.RegisterFS("exfat", std::make_shared<ExFatFileSystem>());
     registry.RegisterFS("ntfs", std::make_shared<NtfsFileSystem>());
 
-    MountService mounter;
-    std::cout << "[+] Storage Manager active with VFS access control enforcement.\n";
+    FileWatcher watcher;
+    // Register default watch path for user documents/storage
+    watcher.AddWatch("/mnt/usb");
+
+    std::cout << "[+] Storage Manager active with real-time File Watcher monitoring.\n";
 
     while (true) {
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        // Poll for filesystem events non-blockingly
+        watcher.PollEvents([](const std::string& path, uint32_t mask) {
+            std::cout << "[FileWatcher Event] Path changed: " << path << " (Mask: " << mask << ")\n";
+        });
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
     return 0;

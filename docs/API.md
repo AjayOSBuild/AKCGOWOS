@@ -81,3 +81,21 @@ Abstracts raw filesystem mounts and block device manipulation.
 *   `AutoMountStorage(String blockDevice) -> String`
     *   **Description:** Automatically inspects a newly attached block device, determines its filesystem type (ext4, vfat, exfat, ntfs), creates a mount point under `/mnt/usb/[device]`, and mounts it.
     *   **Returns:** The assigned mount point path on success.
+
+## 4. File Watcher API
+
+**Interface:** `os.core.FileWatcher`
+**Object Path:** `/os/core/FileWatcher`
+
+Provides real-time notification streams for filesystem changes to keep the File Explorer UI synchronized.
+
+### Methods
+
+*   `WatchPath(String path) -> Int32`
+    *   **Description:** Registers a directory path to be monitored via `inotify`.
+    *   **Returns:** Watch descriptor ID on success, or -1 on failure.
+
+### Signals (Broadcasts)
+
+*   `FileChanged(String filePath, UInt32 changeMask)`
+    *   **Emitted when:** A file or directory within a watched path is created, modified, deleted, or moved.
