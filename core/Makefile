@@ -15,6 +15,7 @@ UPM_TARGET := $(BUILD_DIR)/update_manager
 NS_TARGET := $(BUILD_DIR)/notification_service
 AM_TARGET := $(BUILD_DIR)/application_manager
 PRM_TARGET := $(BUILD_DIR)/process_manager
+SES_TARGET := $(BUILD_DIR)/system_event_service
 
 CC := gcc
 CXX := g++
@@ -23,7 +24,7 @@ CXXFLAGS := -Wall -Wextra -static -O2 -std=c++17
 
 .PHONY: all clean
 
-all: $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET) $(LS_TARGET) $(STM_TARGET) $(NM_TARGET) $(UPM_TARGET) $(NS_TARGET) $(AM_TARGET) $(PRM_TARGET)
+all: $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET) $(LS_TARGET) $(STM_TARGET) $(NM_TARGET) $(UPM_TARGET) $(NS_TARGET) $(AM_TARGET) $(PRM_TARGET) $(SES_TARGET)
 
 $(INIT_TARGET): init.c
 	@mkdir -p $(BUILD_DIR)
@@ -95,5 +96,10 @@ $(PRM_TARGET): process_manager.cpp
 	@echo "[*] Compiling C++ Process Manager..."
 	$(CXX) $(CXXFLAGS) -o $(PRM_TARGET) process_manager.cpp
 
+$(SES_TARGET): system_event_service.cpp
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ System Event Service..."
+	$(CXX) $(CXXFLAGS) -o $(SES_TARGET) system_event_service.cpp
+
 clean:
-	@rm -f $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET) $(LS_TARGET) $(STM_TARGET) $(NM_TARGET) $(UPM_TARGET) $(NS_TARGET) $(AM_TARGET) $(PRM_TARGET)
+	@rm -f $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET) $(LS_TARGET) $(STM_TARGET) $(NM_TARGET) $(UPM_TARGET) $(NS_TARGET) $(AM_TARGET) $(PRM_TARGET) $(SES_TARGET)
