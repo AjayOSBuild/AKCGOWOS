@@ -1,27 +1,14 @@
 # Kernel Subsystem Makefile
 
-BUILD_DIR := ../build
-TARGET := $(BUILD_DIR)/bzImage
-CONFIG_FILE := minimal_defconfig
+.PHONY: all clean build
 
-.PHONY: all clean fetch config build_dummy
+all: build
 
-all: build_dummy
-
-# Placeholder target for Phase 2 early integration testing.
-# In KERN-002, this will be replaced with actual kernel compilation.
-build_dummy:
-	@echo "[*] (KERN-001) Generating dummy kernel bzImage for bootloader integration..."
-	@mkdir -p $(BUILD_DIR)
-	@echo "DUMMY_LINUX_KERNEL_PAYLOAD" > $(TARGET)
-	@echo "[+] Dummy bzImage ready at $(TARGET)"
-
-# Future hooks for KERN-002
-fetch:
-	@echo "Downloading Linux kernel source..."
-
-config:
-	@echo "Applying $(CONFIG_FILE)..."
+build:
+	@../scripts/build_kernel.sh
 
 clean:
-	@rm -f $(TARGET)
+	@rm -f ../build/bzImage
+	@if [ -d "src/linux-6.6.60" ]; then \
+		$(MAKE) -C src/linux-6.6.60 clean; \
+	fi
