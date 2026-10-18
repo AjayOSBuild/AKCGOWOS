@@ -6,6 +6,7 @@ BOOT_EFI="boot/bootx64.efi"
 BOOT_CFG="boot/boot.cfg"
 KERNEL_DUMMY="build/bzImage"
 INITRAMFS="build/initramfs.cpio.gz"
+SIMULATE_MISSING_KERNEL="${SIMULATE_MISSING_KERNEL:-0}"
 
 echo "[*] Generating UEFI bootable disk image..."
 
@@ -15,7 +16,6 @@ if [ ! -f "$BOOT_EFI" ]; then
 fi
 
 if [ ! -f "$INITRAMFS" ]; then
-    echo "[*] $INITRAMFS not found. Generating it now..."
     ./scripts/gen_initramfs.sh
 fi
 
@@ -29,7 +29,12 @@ mmd -i "$IMAGE" ::/EFI
 mmd -i "$IMAGE" ::/EFI/BOOT
 mcopy -i "$IMAGE" "$BOOT_EFI" ::/EFI/BOOT/BOOTX64.EFI
 mcopy -i "$IMAGE" "$BOOT_CFG" ::/EFI/BOOT/boot.cfg
-mcopy -i "$IMAGE" "$KERNEL_DUMMY" ::/EFI/BOOT/bzImage
 mcopy -i "$IMAGE" "$INITRAMFS" ::/EFI/BOOT/initramfs.cpio.gz
+
+if [ "$SIMULATE_MISSING_KERNEL" -eq 0 ]; then
+    mcopy -i "$IMAGE" "$KERNEL_DUMMY" ::/EFI/BOOT/bzImage
+else
+    echo "[!] Negative testing mode: Intentionally omitting bzImage."
+fi
 
 echo "[+] Disk image generated at $IMAGE"
