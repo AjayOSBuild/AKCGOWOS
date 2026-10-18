@@ -13,7 +13,7 @@ boot:
 
 kernel:
 	@echo "Building kernel..."
-	# $(MAKE) -C kernel
+	$(MAKE) -C kernel
 
 user:
 	@echo "Building user space..."
@@ -31,4 +31,4 @@ clean:
 	@echo "Cleaning build artifacts..."
 	rm -rf $(BUILD_DIR)/*
 	# $(MAKE) -C boot clean
-	# $(MAKE) -C kernel clean
+	$(MAKE) -C kernel clean
