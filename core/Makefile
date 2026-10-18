@@ -14,6 +14,7 @@ NM_TARGET := $(BUILD_DIR)/network_manager
 UPM_TARGET := $(BUILD_DIR)/update_manager
 NS_TARGET := $(BUILD_DIR)/notification_service
 AM_TARGET := $(BUILD_DIR)/application_manager
+PRM_TARGET := $(BUILD_DIR)/process_manager
 
 CC := gcc
 CXX := g++
@@ -22,7 +23,7 @@ CXXFLAGS := -Wall -Wextra -static -O2 -std=c++17
 
 .PHONY: all clean
 
-all: $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET) $(LS_TARGET) $(STM_TARGET) $(NM_TARGET) $(UPM_TARGET) $(NS_TARGET) $(AM_TARGET)
+all: $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET) $(LS_TARGET) $(STM_TARGET) $(NM_TARGET) $(UPM_TARGET) $(NS_TARGET) $(AM_TARGET) $(PRM_TARGET)
 
 $(INIT_TARGET): init.c
 	@mkdir -p $(BUILD_DIR)
@@ -89,5 +90,10 @@ $(AM_TARGET): application_manager.cpp
 	@echo "[*] Compiling C++ Application Manager..."
 	$(CXX) $(CXXFLAGS) -o $(AM_TARGET) application_manager.cpp
 
+$(PRM_TARGET): process_manager.cpp
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Process Manager..."
+	$(CXX) $(CXXFLAGS) -o $(PRM_TARGET) process_manager.cpp
+
 clean:
-	@rm -f $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET) $(LS_TARGET) $(STM_TARGET) $(NM_TARGET) $(UPM_TARGET) $(NS_TARGET) $(AM_TARGET)
+	@rm -f $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET) $(LS_TARGET) $(STM_TARGET) $(NM_TARGET) $(UPM_TARGET) $(NS_TARGET) $(AM_TARGET) $(PRM_TARGET)
