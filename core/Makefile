@@ -13,6 +13,7 @@ STM_TARGET := $(BUILD_DIR)/storage_manager
 NM_TARGET := $(BUILD_DIR)/network_manager
 UPM_TARGET := $(BUILD_DIR)/update_manager
 NS_TARGET := $(BUILD_DIR)/notification_service
+AM_TARGET := $(BUILD_DIR)/application_manager
 
 CC := gcc
 CXX := g++
@@ -21,7 +22,7 @@ CXXFLAGS := -Wall -Wextra -static -O2 -std=c++17
 
 .PHONY: all clean
 
-all: $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET) $(LS_TARGET) $(STM_TARGET) $(NM_TARGET) $(UPM_TARGET) $(NS_TARGET)
+all: $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET) $(LS_TARGET) $(STM_TARGET) $(NM_TARGET) $(UPM_TARGET) $(NS_TARGET) $(AM_TARGET)
 
 $(INIT_TARGET): init.c
 	@mkdir -p $(BUILD_DIR)
@@ -83,5 +84,10 @@ $(NS_TARGET): notification_service.cpp
 	@echo "[*] Compiling C++ Notification Service..."
 	$(CXX) $(CXXFLAGS) -o $(NS_TARGET) notification_service.cpp
 
+$(AM_TARGET): application_manager.cpp
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Application Manager..."
+	$(CXX) $(CXXFLAGS) -o $(AM_TARGET) application_manager.cpp
+
 clean:
-	@rm -f $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET) $(LS_TARGET) $(STM_TARGET) $(NM_TARGET) $(UPM_TARGET) $(NS_TARGET)
+	@rm -f $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET) $(LS_TARGET) $(STM_TARGET) $(NM_TARGET) $(UPM_TARGET) $(NS_TARGET) $(AM_TARGET)
