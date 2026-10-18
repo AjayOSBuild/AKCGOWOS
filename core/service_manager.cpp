@@ -52,6 +52,7 @@ int main() {
     // Define core service placeholders for Phase 4 validation
     services.emplace("DeviceManager", Service("DeviceManager", "/sbin/device_manager"));
     services.emplace("LoggingService", Service("LoggingService", "echo 'LoggingService mock running' && sleep 3600"));
+    services.emplace("SessionManager", Service("SessionManager", "/sbin/session_manager"));
 
     // Startup phase
     for (auto& pair : services) {
