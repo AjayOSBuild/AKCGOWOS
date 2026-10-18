@@ -15,20 +15,40 @@ static inline UINT8 inb(UINT16 port) {
 }
 
 void InitSerial() {
-    outb(COM1_PORT + 1, 0x00);    // Disable all interrupts
-    outb(COM1_PORT + 3, 0x80);    // Enable DLAB (set baud rate divisor)
-    outb(COM1_PORT + 0, 0x03);    // Set divisor to 3 (lo byte) 38400 baud
-    outb(COM1_PORT + 1, 0x00);    //                  (hi byte)
-    outb(COM1_PORT + 3, 0x03);    // 8 bits, no parity, one stop bit
-    outb(COM1_PORT + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
-    outb(COM1_PORT + 4, 0x0B);    // IRQs enabled, RTS/DSR set
+    outb(COM1_PORT + 1, 0x00);
+    outb(COM1_PORT + 3, 0x80);
+    outb(COM1_PORT + 0, 0x03);
+    outb(COM1_PORT + 1, 0x00);
+    outb(COM1_PORT + 3, 0x03);
+    outb(COM1_PORT + 2, 0xC7);
+    outb(COM1_PORT + 4, 0x0B);
 }
 
 void SerialWrite(const char* str) {
     while (*str) {
-        while ((inb(COM1_PORT + 5) & 0x20) == 0); // Wait for transmit buffer to be empty
+        while ((inb(COM1_PORT + 5) & 0x20) == 0);
         outb(COM1_PORT, *str++);
     }
+}
+
+// --- Framebuffer (GOP) Initialization ---
+EFI_GRAPHICS_OUTPUT_PROTOCOL* InitGOP() {
+    EFI_GRAPHICS_OUTPUT_PROTOCOL *gop = NULL;
+    EFI_GUID gopGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
+    
+    EFI_STATUS status = uefi_call_wrapper(BS->LocateProtocol, 3, &gopGuid, NULL, (void**)&gop);
+    if (EFI_ERROR(status)) {
+        SerialWrite("[!] Error: Could not locate Graphics Output Protocol (GOP).\n");
+        Print(L"[!] Error: GOP not found. QEMU must run with VGA enabled (-vga virtio).\n\r");
+        return NULL;
+    }
+    
+    SerialWrite("[*] Graphics Output Protocol (GOP) Initialized.\n");
+    Print(L"[*] Framebuffer detected: %dx%d\n\r", 
+          gop->Mode->Info->HorizontalResolution, 
+          gop->Mode->Info->VerticalResolution);
+          
+    return gop;
 }
 
 // --- File Handling ---
@@ -50,36 +70,32 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     InitializeLib(ImageHandle, SystemTable);
     SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
     
-    // Initialize headless logging
     InitSerial();
     SerialWrite("\n\n=== OS Project UEFI Bootloader ===\n");
-    SerialWrite("[*] COM1 Serial Console Initialized.\n");
     Print(L"=== OS Project UEFI Bootloader ===\n\r");
-    Print(L"[*] Serial console initialized on COM1.\n\r");
     
+    // 1. Initialize Framebuffer
+    EFI_GRAPHICS_OUTPUT_PROTOCOL *Gop = InitGOP();
+
+    // 2. Mount Boot Partition
     EFI_FILE_HANDLE Volume = GetVolume(ImageHandle);
     if (!Volume) {
         SerialWrite("[!] Error: Could not mount EFI System Partition.\n");
-        Print(L"[!] Error: Could not mount EFI System Partition.\n\r");
         return EFI_LOAD_ERROR;
     }
 
-    // 1. Locate the Kernel
+    // 3. Locate Kernel
     EFI_FILE_HANDLE KernelFile;
     EFI_STATUS Status = uefi_call_wrapper(Volume->Open, 5, Volume, &KernelFile, L"EFI\\BOOT\\bzImage", EFI_FILE_MODE_READ, EFI_FILE_READ_ONLY);
-    if (EFI_ERROR(Status)) {
-        SerialWrite("[!] Error: Kernel (bzImage) not found.\n");
-        Print(L"[!] Error: Kernel (bzImage) not found.\n\r");
-    } else {
+    if (!EFI_ERROR(Status)) {
         SerialWrite("[*] Kernel file located.\n");
         Print(L"[*] Kernel file located.\n\r");
         uefi_call_wrapper(KernelFile->Close, 1, KernelFile);
     }
 
-    // 2. Parse the Command Line
+    // 4. Parse Command Line
     EFI_FILE_HANDLE ConfigFile;
     Status = uefi_call_wrapper(Volume->Open, 5, Volume, &ConfigFile, L"EFI\\BOOT\\boot.cfg", EFI_FILE_MODE_READ, EFI_FILE_READ_ONLY);
-    
     if (!EFI_ERROR(Status)) {
         UINTN BufferSize = 512;
         CHAR8 Buffer[512];
@@ -103,9 +119,7 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
                     break;
                 }
             }
-            SerialWrite("[+] Command Line Extracted: ");
-            SerialWrite((const char*)cmd_start);
-            SerialWrite("\n");
+            SerialWrite("[+] Command Line Extracted.\n");
             Print(L"[+] Command Line Extracted: %a\n\r", cmd_start);
         }
         uefi_call_wrapper(ConfigFile->Close, 1, ConfigFile);
