@@ -14,6 +14,7 @@
 #include "fs_exfat.h"
 #include "fs_ntfs.h"
 #include "file_watcher.h"
+#include "file_indexer.h"
 
 namespace fs = std::filesystem;
 
@@ -30,7 +31,7 @@ public:
 
 int main() {
     std::cout << "=== OS Project Storage Manager (Ring 3) ===\n";
-    std::cout << "[*] Initializing block device tracking and File Watcher...\n";
+    std::cout << "[*] Initializing block device tracking and File Indexer...\n";
 
     VFSRegistry registry;
     registry.RegisterFS("ext4", std::make_shared<Ext4FileSystem>());
@@ -39,15 +40,21 @@ int main() {
     registry.RegisterFS("ntfs", std::make_shared<NtfsFileSystem>());
 
     FileWatcher watcher;
-    // Register default watch path for user documents/storage
-    watcher.AddWatch("/mnt/usb");
+    FileIndexer indexer;
 
-    std::cout << "[+] Storage Manager active with real-time File Watcher monitoring.\n";
+    // Index default storage paths
+    indexer.IndexDirectory("/mnt/usb");
+
+    std::cout << "[+] Storage Manager active with real-time File Watcher and File Indexer.\n";
 
     while (true) {
-        // Poll for filesystem events non-blockingly
-        watcher.PollEvents([](const std::string& path, uint32_t mask) {
-            std::cout << "[FileWatcher Event] Path changed: " << path << " (Mask: " << mask << ")\n";
+        watcher.PollEvents([&indexer](const std::string& path, uint32_t mask) {
+            std::cout << "[FileWatcher Event] Path changed: " << path << "\n";
+            if (mask & IN_CREATE || mask & IN_MOVED_TO) {
+                indexer.AddPath(path);
+            } else if (mask & IN_DELETE || mask & IN_MOVED_FROM) {
+                indexer.RemovePath(path);
+            }
         });
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }

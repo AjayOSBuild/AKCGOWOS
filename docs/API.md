@@ -99,3 +99,16 @@ Provides real-time notification streams for filesystem changes to keep the File 
 
 *   `FileChanged(String filePath, UInt32 changeMask)`
     *   **Emitted when:** A file or directory within a watched path is created, modified, deleted, or moved.
+
+## 5. File Indexer API
+
+**Interface:** `os.core.FileIndexer`
+**Object Path:** `/os/core/FileIndexer`
+
+Provides rapid substring lookup across indexed filesystem directories.
+
+### Methods
+
+*   `SearchFiles(String query) -> Array<String>`
+    *   **Description:** Performs a fast in-memory cache search for filenames matching the query string.
+    *   **Returns:** Array of matching absolute file paths.
