@@ -1,20 +1,27 @@
 # Core Subsystem Makefile
 
 BUILD_DIR := ../build
-TARGET := $(BUILD_DIR)/init
+INIT_TARGET := $(BUILD_DIR)/init
+SM_TARGET := $(BUILD_DIR)/service_manager
 
 CC := gcc
-# Compile statically and include pthread support
+CXX := g++
 CFLAGS := -Wall -Wextra -static -O2 -pthread
+CXXFLAGS := -Wall -Wextra -static -O2 -std=c++17
 
 .PHONY: all clean
 
-all: $(TARGET)
+all: $(INIT_TARGET) $(SM_TARGET)
 
-$(TARGET): init.c
+$(INIT_TARGET): init.c
 	@mkdir -p $(BUILD_DIR)
-	@echo "[*] Compiling core init daemon with thread support..."
-	$(CC) $(CFLAGS) -o $(TARGET) init.c
+	@echo "[*] Compiling core init daemon..."
+	$(CC) $(CFLAGS) -o $(INIT_TARGET) init.c
+
+$(SM_TARGET): service_manager.cpp
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Service Manager..."
+	$(CXX) $(CXXFLAGS) -o $(SM_TARGET) service_manager.cpp
 
 clean:
-	@rm -f $(TARGET)
+	@rm -f $(INIT_TARGET) $(SM_TARGET)
