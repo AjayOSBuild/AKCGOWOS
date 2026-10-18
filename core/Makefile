@@ -4,8 +4,8 @@ BUILD_DIR := ../build
 TARGET := $(BUILD_DIR)/init
 
 CC := gcc
-# Compile statically so it doesn't depend on shared libraries in the minimal initramfs
-CFLAGS := -Wall -Wextra -static -O2
+# Compile statically and include pthread support
+CFLAGS := -Wall -Wextra -static -O2 -pthread
 
 .PHONY: all clean
 
@@ -13,7 +13,7 @@ all: $(TARGET)
 
 $(TARGET): init.c
 	@mkdir -p $(BUILD_DIR)
-	@echo "[*] Compiling core init daemon..."
+	@echo "[*] Compiling core init daemon with thread support..."
 	$(CC) $(CFLAGS) -o $(TARGET) init.c
 
 clean:

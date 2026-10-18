@@ -6,6 +6,17 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <signal.h>
+#include <pthread.h>
+
+// Background thread function to validate scheduler concurrency
+void* system_heartbeat(void* arg) {
+    (void)arg;
+    while (1) {
+        printf("[Diag] Init (PID 1) Thread Heartbeat: System is stable.\n");
+        sleep(5);
+    }
+    return NULL;
+}
 
 void setup_filesystems() {
     printf("[*] Mounting virtual filesystems...\n");
@@ -15,7 +26,6 @@ void setup_filesystems() {
 }
 
 int main() {
-    // PID 1 identifying output
     printf("\n=== OS Project Core Init (PID 1) ===\n");
     
     if (getpid() != 1) {
@@ -24,9 +34,16 @@ int main() {
 
     setup_filesystems();
 
+    printf("[*] Initializing system thread pool...\n");
+    pthread_t heartbeat_thread;
+    if (pthread_create(&heartbeat_thread, NULL, system_heartbeat, NULL) != 0) {
+        printf("[FATAL] Failed to create system heartbeat thread. Check CONFIG_FUTEX.\n");
+        exit(1);
+    }
+
     printf("[+] Core Services initialized. Entering master process loop...\n");
 
-    // Master loop to reap zombie processes (critical for PID 1)
+    // Master loop to reap zombie processes
     sigset_t set;
     int status;
     
