@@ -10,6 +10,7 @@
 #include "vfs.h"
 #include "fs_ext4.h"
 #include "fs_fat32.h"
+#include "fs_exfat.h"
 
 // VFS Registry
 class VFSRegistry {
@@ -66,6 +67,7 @@ int main() {
     // Register filesystem wrappers
     registry.RegisterFS("ext4", std::make_shared<Ext4FileSystem>());
     registry.RegisterFS("vfat", std::make_shared<Fat32FileSystem>());
+    registry.RegisterFS("exfat", std::make_shared<ExFatFileSystem>());
 
     MountService mounter;
     std::cout << "[*] Mount/Unmount service initialized and ready.\n";
