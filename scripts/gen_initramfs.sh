@@ -13,10 +13,11 @@ PM_BIN="$BUILD_DIR/permission_manager"
 CS_BIN="$BUILD_DIR/configuration_service"
 LS_BIN="$BUILD_DIR/logging_service"
 STM_BIN="$BUILD_DIR/storage_manager"
+NM_BIN="$BUILD_DIR/network_manager"
 
 echo "[*] Generating initial RAM filesystem (initramfs)..."
 
-if [ ! -f "$INIT_BIN" ] || [ ! -f "$SM_BIN" ] || [ ! -f "$DM_BIN" ] || [ ! -f "$SESS_BIN" ] || [ ! -f "$UM_BIN" ] || [ ! -f "$PM_BIN" ] || [ ! -f "$CS_BIN" ] || [ ! -f "$LS_BIN" ] || [ ! -f "$STM_BIN" ]; then
+if [ ! -f "$INIT_BIN" ] || [ ! -f "$SM_BIN" ] || [ ! -f "$DM_BIN" ] || [ ! -f "$SESS_BIN" ] || [ ! -f "$UM_BIN" ] || [ ! -f "$PM_BIN" ] || [ ! -f "$CS_BIN" ] || [ ! -f "$LS_BIN" ] || [ ! -f "$STM_BIN" ] || [ ! -f "$NM_BIN" ]; then
     echo "[!] Error: Core binaries not found. Run 'make user' first."
     exit 1
 fi
@@ -38,7 +39,8 @@ cp "../../$PM_BIN" ./sbin/permission_manager
 cp "../../$CS_BIN" ./sbin/configuration_service
 cp "../../$LS_BIN" ./sbin/logging_service
 cp "../../$STM_BIN" ./sbin/storage_manager
-chmod +x ./init ./sbin/service_manager ./sbin/device_manager ./sbin/session_manager ./sbin/user_manager ./sbin/permission_manager ./sbin/configuration_service ./sbin/logging_service ./sbin/storage_manager
+cp "../../$NM_BIN" ./sbin/network_manager
+chmod +x ./init ./sbin/service_manager ./sbin/device_manager ./sbin/session_manager ./sbin/user_manager ./sbin/permission_manager ./sbin/configuration_service ./sbin/logging_service ./sbin/storage_manager ./sbin/network_manager
 
 # Package into cpio archive and gzip
 find . -print0 | cpio --null -ov --format=newc 2>/dev/null | gzip -9 > "../initramfs.cpio.gz"

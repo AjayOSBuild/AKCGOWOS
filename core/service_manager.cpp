@@ -53,6 +53,7 @@ int main() {
     services.emplace("DeviceManager", Service("DeviceManager", "/sbin/device_manager"));
     services.emplace("LoggingService", Service("LoggingService", "/sbin/logging_service"));
     services.emplace("StorageManager", Service("StorageManager", "/sbin/storage_manager"));
+    services.emplace("NetworkManager", Service("NetworkManager", "/sbin/network_manager"));
     services.emplace("SessionManager", Service("SessionManager", "/sbin/session_manager"));
     services.emplace("UserManager", Service("UserManager", "/sbin/user_manager"));
     services.emplace("PermissionManager", Service("PermissionManager", "/sbin/permission_manager"));
