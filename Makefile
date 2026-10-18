@@ -17,7 +17,7 @@ kernel:
 
 user:
 	@echo "Building user space..."
-	# $(MAKE) -C core
+	$(MAKE) -C core
 
 iso:
 	@echo "Generating bootable image..."
