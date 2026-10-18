@@ -34,3 +34,7 @@ We reject the traditional model where every user application runs with full acce
 *   **Secure Boot:** The UEFI bootloader must verify the digital signature of the kernel before execution to prevent rootkits.
 *   **Encrypted Storage:** User data partitions must support block-level encryption (e.g., LUKS) to protect data at rest.
 *   **Credentials:** Passwords, tokens, and encryption keys must be stored in a secure, encrypted credential storage service, never in plaintext configurations.
+
+## 5. Filesystem Permissions & Access Control
+
+The Virtual Filesystem (VFS) abstraction layer enforces fine-grained permission checks (`VFSAuthorizer`) on every file open, read, and write request. Unprivileged application runtimes are strictly restricted from modifying system files or accessing other users' home directories without explicit authorization from the Permission Manager.

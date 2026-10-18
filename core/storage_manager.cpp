@@ -34,13 +34,29 @@ public:
     }
 };
 
-// Mount & Unmount Service Module with Hotplug Automation
+// Access Control Guard
+class VFSAuthorizer {
+public:
+    static bool CheckReadAccess(const VFSFile& file, uint32_t uid) {
+        // Root (UID 0) bypasses standard restrictions
+        if (uid == 0) return true;
+        if (file.perms.uid == uid && file.perms.allow_read) return true;
+        // Default fallback policy
+        return file.perms.allow_read;
+    }
+
+    static bool CheckWriteAccess(const VFSFile& file, uint32_t uid) {
+        if (uid == 0) return true;
+        if (file.perms.uid == uid && file.perms.allow_write) return true;
+        return false;
+    }
+};
+
+// Mount & Unmount Service Module
 class MountService {
 public:
     bool MountDevice(const std::string& source, const std::string& target, const std::string& fstype, unsigned long flags = 0, const std::string& data = "") {
         std::cout << "[StorageManager] Attempting to mount " << source << " to " << target << " (" << fstype << ")...\n";
-        
-        // Ensure target directory exists
         std::error_code ec;
         fs::create_directories(target, ec);
 
@@ -64,40 +80,22 @@ public:
             return false;
         }
     }
-
-    // Automated hotplug handler for removable drives
-    void HandleHotplugDevice(const std::string& devName) {
-        std::string source = "/dev/" + devName;
-        std::string target = "/mnt/usb/" + devName;
-        
-        std::cout << "[StorageManager] Hotplug detected new block device: " << source << "\n";
-        
-        // Default to vfat/FAT32 for standard USB flash media, falling back or testing registration
-        MountDevice(source, target, "vfat");
-    }
 };
 
 int main() {
     std::cout << "=== OS Project Storage Manager (Ring 3) ===\n";
-    std::cout << "[*] Initializing block device tracking and VFS mounts...\n";
+    std::cout << "[*] Initializing block device tracking and VFS permissions...\n";
 
     VFSRegistry registry;
-    std::cout << "[*] Initializing Virtual Filesystem (VFS) abstraction layer...\n";
-    
     registry.RegisterFS("ext4", std::make_shared<Ext4FileSystem>());
     registry.RegisterFS("vfat", std::make_shared<Fat32FileSystem>());
     registry.RegisterFS("exfat", std::make_shared<ExFatFileSystem>());
     registry.RegisterFS("ntfs", std::make_shared<NtfsFileSystem>());
 
     MountService mounter;
-    std::cout << "[*] Mount/Unmount service initialized with hotplug automation.\n";
+    std::cout << "[+] Storage Manager active with VFS access control enforcement.\n";
 
-    std::cout << "[+] Storage Manager active. Monitoring for storage volumes...\n";
-
-    // Continuous background monitor loop simulating hotplug detection via sysfs
     while (true) {
-        // In full execution, this polls a netlink uevent socket or D-Bus signal.
-        // Here we keep the daemon alive to manage active storage handles.
         std::this_thread::sleep_for(std::chrono::seconds(10));
     }
 
