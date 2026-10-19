@@ -4,13 +4,13 @@
 #include <vector>
 #include <memory>
 #include <functional>
-#include "compositor.h" // For Graphics2D and FontRenderer access
+#include "compositor.h"
 
 enum class UIEventType { MOUSE_CLICK, MOUSE_MOVE, KEY_PRESS, KEY_RELEASE };
 
 struct UIEvent {
     UIEventType type;
-    int x, y; // Mouse coordinates relative to the screen/widget
+    int x, y; 
     int key_code;
     bool pressed;
     bool handled = false;
@@ -22,6 +22,7 @@ public:
     int width = 0, height = 0;
     bool visible = true;
     bool is_hovered = false;
+    bool is_focused = false;
 
     virtual ~Widget() = default;
 
@@ -33,11 +34,9 @@ public:
         return visible && (test_x >= x && test_x <= x + width && test_y >= y && test_y <= y + height);
     }
 
-    virtual void OnEvent(UIEvent& event) {
-        // Base implementation does nothing
-    }
+    virtual void OnEvent(UIEvent& event) { }
 
-    virtual void Draw(Graphics2D& gfx, FontRenderer& font_engine) = 0; // Pure virtual
+    virtual void Draw(Graphics2D& gfx, FontRenderer& font_engine) = 0;
 };
 
 class Container : public Widget {
@@ -49,9 +48,7 @@ public:
         children.push_back(child);
     }
 
-    virtual void PerformLayout() {
-        // Base container does no automatic layout
-    }
+    virtual void PerformLayout() {}
 
     void OnEvent(UIEvent& event) override {
         if (!visible) return;
@@ -60,12 +57,20 @@ public:
             auto& child = *it;
             if (event.type == UIEventType::MOUSE_CLICK || event.type == UIEventType::MOUSE_MOVE) {
                 if (child->HitTest(event.x, event.y)) {
+                    // Manage UI Focus
+                    if (event.type == UIEventType::MOUSE_CLICK && event.pressed) {
+                        for (auto& c : children) c->is_focused = false;
+                        child->is_focused = true;
+                    }
                     child->OnEvent(event);
                     if (event.handled) return;
                 }
             } else {
-                child->OnEvent(event);
-                if (event.handled) return;
+                // Route keyboard events to the focused widget
+                if (child->is_focused) {
+                    child->OnEvent(event);
+                    if (event.handled) return;
+                }
             }
         }
     }
@@ -78,7 +83,7 @@ public:
     }
 };
 
-// --- Interactive Button Widget ---
+// --- Button Widget ---
 class Button : public Widget {
 private:
     std::string label;
@@ -91,7 +96,6 @@ public:
         if (!visible) return;
         if (event.type == UIEventType::MOUSE_CLICK && event.pressed) {
             if (HitTest(event.x, event.y)) {
-                std::cout << "[Button] Clicked: " << label << "\n";
                 if (on_click) on_click();
                 event.handled = true;
             }
@@ -100,10 +104,69 @@ public:
 
     void Draw(Graphics2D& gfx, FontRenderer& font_engine) override {
         if (!visible) return;
-        uint32_t bg_color = is_hovered ? 0xFF777777 : 0xFF555555;
+        uint32_t bg_color = is_focused ? 0xFF666666 : (is_hovered ? 0xFF777777 : 0xFF555555);
         gfx.FillRect(x, y, width, height, bg_color);
         gfx.DrawRect(x, y, width, height, 0xFF000000, 1);
         font_engine.DrawText(label, x + (width / 4), y + (height / 2) + 5, 12, 0xFFFFFFFF);
+    }
+};
+
+// --- Label Widget ---
+class Label : public Widget {
+private:
+    std::string text;
+    uint32_t text_color;
+
+public:
+    Label(const std::string& t, uint32_t color = 0xFF000000) : text(t), text_color(color) {}
+
+    void Draw(Graphics2D& gfx, FontRenderer& font_engine) override {
+        if (!visible) return;
+        font_engine.DrawText(text, x, y + height, 12, text_color);
+    }
+};
+
+// --- Text Input Widget ---
+class TextInput : public Widget {
+private:
+    std::string buffer;
+    
+public:
+    TextInput() {}
+
+    std::string GetText() const { return buffer; }
+
+    void OnEvent(UIEvent& event) override {
+        if (!visible || !is_focused) return;
+        
+        if (event.type == UIEventType::KEY_PRESS && event.pressed) {
+            // Simplified ascii routing mapping (requires full keyboard driver in complete OS)
+            if (event.key_code == 8) { // Backspace
+                if (!buffer.empty()) buffer.pop_back();
+                event.handled = true;
+            } else if (event.key_code >= 32 && event.key_code <= 126) { // Printable ASCII
+                buffer += static_cast<char>(event.key_code);
+                event.handled = true;
+            }
+        }
+    }
+
+    void Draw(Graphics2D& gfx, FontRenderer& font_engine) override {
+        if (!visible) return;
+        
+        // Draw input box background and border
+        gfx.FillRect(x, y, width, height, 0xFFFFFFFF);
+        uint32_t border_color = is_focused ? 0xFF0000FF : 0xFF000000;
+        gfx.DrawRect(x, y, width, height, border_color, is_focused ? 2 : 1);
+        
+        // Draw text
+        font_engine.DrawText(buffer, x + 5, y + (height / 2) + 5, 12, 0xFF000000);
+        
+        // Draw blinking cursor if focused
+        if (is_focused) {
+            int cursor_x = x + 5 + (buffer.length() * 8); // Approximation without exact font metrics
+            gfx.FillRect(cursor_x, y + 5, 2, height - 10, 0xFF000000);
+        }
     }
 };
 
