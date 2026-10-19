@@ -327,3 +327,15 @@ $(DEV_SDK_TARGET): $(DEV_SDK_SRCS)
 
 # Append to all target
 all: $(DEV_SDK_TARGET)
+
+# Developer Environment: Package Tools Target
+DEV_PKG_TARGET := $(BUILD_DIR)/pkg_tools
+DEV_PKG_SRCS := $(DEV_DIR)/package_tools.cpp
+
+$(DEV_PKG_TARGET): $(DEV_PKG_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Package Development Tools..."
+	$(CXX) $(CXXFLAGS) -o $(DEV_PKG_TARGET) $(DEV_DIR)/package_tools.cpp
+
+# Append to all target
+all: $(DEV_PKG_TARGET)
