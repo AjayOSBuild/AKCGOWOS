@@ -424,3 +424,15 @@ $(PKG_INST_TARGET):$(PKG_INST_SRCS)
 
 # Append to all target
 all: $(PKG_INST_TARGET)
+
+# Package Manager: Uninstaller Target
+PKG_UNINST_TARGET := $(BUILD_DIR)/pkg_uninstaller
+PKG_UNINST_SRCS := $(PKG_DIR)/package_uninstaller.cpp
+
+$(PKG_UNINST_TARGET):$(PKG_UNINST_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Package Uninstaller..."
+	$(CXX)$(CXXFLAGS) -o $(PKG_UNINST_TARGET)$(PKG_DIR)/package_uninstaller.cpp
+
+# Append to all target
+all: $(PKG_UNINST_TARGET)
