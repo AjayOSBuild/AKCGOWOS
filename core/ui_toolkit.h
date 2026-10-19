@@ -16,6 +16,31 @@ struct UIEvent {
     bool handled = false;
 };
 
+// --- Graphics & Font Engine Extensions ---
+class FontRenderer {
+private:
+    std::string current_font_path;
+public:
+    bool LoadFont(const std::string& path) {
+        current_font_path = path;
+        std::cout << "[FontRenderer] Loaded UI font: " << path << "\n";
+        return true;
+    }
+    void DrawText(const std::string& text, int x, int y, int size, uint32_t color) {}
+};
+
+class Graphics2D {
+public:
+    Graphics2D() { std::cout << "[Graphics2D] 2D vector graphics engine initialized.\n"; }
+    void FillRect(int x, int y, int width, int height, uint32_t color) {}
+    void DrawRect(int x, int y, int width, int height, uint32_t color, int thickness) {}
+    void DrawLine(int x1, int y1, int x2, int y2, uint32_t color, int thickness) {}
+    void DrawImage(const std::string& image_path, int x, int y, int width, int height) {
+        // In full execution, this decodes the image (e.g., PNG/JPEG) and blits the pixel buffer
+    }
+};
+
+// --- Base Widget Architecture ---
 class Widget {
 public:
     int x = 0, y = 0;
@@ -35,7 +60,6 @@ public:
     }
 
     virtual void OnEvent(UIEvent& event) { }
-
     virtual void Draw(Graphics2D& gfx, FontRenderer& font_engine) = 0;
 };
 
@@ -44,20 +68,15 @@ protected:
     std::vector<std::shared_ptr<Widget>> children;
 
 public:
-    void AddChild(std::shared_ptr<Widget> child) {
-        children.push_back(child);
-    }
-
+    void AddChild(std::shared_ptr<Widget> child) { children.push_back(child); }
     virtual void PerformLayout() {}
 
     void OnEvent(UIEvent& event) override {
         if (!visible) return;
-
         for (auto it = children.rbegin(); it != children.rend(); ++it) {
             auto& child = *it;
             if (event.type == UIEventType::MOUSE_CLICK || event.type == UIEventType::MOUSE_MOVE) {
                 if (child->HitTest(event.x, event.y)) {
-                    // Manage UI Focus
                     if (event.type == UIEventType::MOUSE_CLICK && event.pressed) {
                         for (auto& c : children) c->is_focused = false;
                         child->is_focused = true;
@@ -66,7 +85,6 @@ public:
                     if (event.handled) return;
                 }
             } else {
-                // Route keyboard events to the focused widget
                 if (child->is_focused) {
                     child->OnEvent(event);
                     if (event.handled) return;
@@ -77,31 +95,24 @@ public:
 
     void Draw(Graphics2D& gfx, FontRenderer& font_engine) override {
         if (!visible) return;
-        for (auto& child : children) {
-            child->Draw(gfx, font_engine);
-        }
+        for (auto& child : children) { child->Draw(gfx, font_engine); }
     }
 };
 
-// --- Button Widget ---
+// --- Standard Widgets ---
 class Button : public Widget {
 private:
     std::string label;
     std::function<void()> on_click;
-
 public:
     Button(const std::string& text, std::function<void()> callback) : label(text), on_click(callback) {}
-
     void OnEvent(UIEvent& event) override {
         if (!visible) return;
-        if (event.type == UIEventType::MOUSE_CLICK && event.pressed) {
-            if (HitTest(event.x, event.y)) {
-                if (on_click) on_click();
-                event.handled = true;
-            }
+        if (event.type == UIEventType::MOUSE_CLICK && event.pressed && HitTest(event.x, event.y)) {
+            if (on_click) on_click();
+            event.handled = true;
         }
     }
-
     void Draw(Graphics2D& gfx, FontRenderer& font_engine) override {
         if (!visible) return;
         uint32_t bg_color = is_focused ? 0xFF666666 : (is_hovered ? 0xFF777777 : 0xFF555555);
@@ -111,85 +122,77 @@ public:
     }
 };
 
-// --- Label Widget ---
 class Label : public Widget {
 private:
     std::string text;
     uint32_t text_color;
-
 public:
     Label(const std::string& t, uint32_t color = 0xFF000000) : text(t), text_color(color) {}
-
     void Draw(Graphics2D& gfx, FontRenderer& font_engine) override {
         if (!visible) return;
         font_engine.DrawText(text, x, y + height, 12, text_color);
     }
 };
 
-// --- Text Input Widget ---
 class TextInput : public Widget {
 private:
     std::string buffer;
-    
 public:
     TextInput() {}
-
     std::string GetText() const { return buffer; }
-
     void OnEvent(UIEvent& event) override {
         if (!visible || !is_focused) return;
-        
         if (event.type == UIEventType::KEY_PRESS && event.pressed) {
-            // Simplified ascii routing mapping (requires full keyboard driver in complete OS)
-            if (event.key_code == 8) { // Backspace
+            if (event.key_code == 8) {
                 if (!buffer.empty()) buffer.pop_back();
                 event.handled = true;
-            } else if (event.key_code >= 32 && event.key_code <= 126) { // Printable ASCII
+            } else if (event.key_code >= 32 && event.key_code <= 126) {
                 buffer += static_cast<char>(event.key_code);
                 event.handled = true;
             }
         }
     }
-
     void Draw(Graphics2D& gfx, FontRenderer& font_engine) override {
         if (!visible) return;
-        
-        // Draw input box background and border
         gfx.FillRect(x, y, width, height, 0xFFFFFFFF);
         uint32_t border_color = is_focused ? 0xFF0000FF : 0xFF000000;
         gfx.DrawRect(x, y, width, height, border_color, is_focused ? 2 : 1);
-        
-        // Draw text
         font_engine.DrawText(buffer, x + 5, y + (height / 2) + 5, 12, 0xFF000000);
-        
-        // Draw blinking cursor if focused
         if (is_focused) {
-            int cursor_x = x + 5 + (buffer.length() * 8); // Approximation without exact font metrics
+            int cursor_x = x + 5 + (buffer.length() * 8);
             gfx.FillRect(cursor_x, y + 5, 2, height - 10, 0xFF000000);
         }
     }
 };
 
-// --- Linear Layout Manager ---
+class ImageBox : public Widget {
+private:
+    std::string image_path;
+public:
+    ImageBox(const std::string& path) : image_path(path) {}
+    void SetImage(const std::string& path) { image_path = path; }
+    
+    void Draw(Graphics2D& gfx, FontRenderer& font_engine) override {
+        if (!visible) return;
+        gfx.DrawImage(image_path, x, y, width, height);
+    }
+};
+
+// --- Layout Managers ---
 enum class LayoutDirection { VERTICAL, HORIZONTAL };
 
 class LinearLayout : public Container {
 private:
     LayoutDirection direction;
     int spacing;
-
 public:
-    LinearLayout(LayoutDirection dir = LayoutDirection::VERTICAL, int spc = 5) 
-        : direction(dir), spacing(spc) {}
-
+    LinearLayout(LayoutDirection dir = LayoutDirection::VERTICAL, int spc = 5) : direction(dir), spacing(spc) {}
     void PerformLayout() override {
         int current_x = x;
         int current_y = y;
-
         for (auto& child : children) {
             child->x = current_x;
             child->y = current_y;
-
             if (direction == LayoutDirection::VERTICAL) {
                 current_y += child->height + spacing;
             } else {
