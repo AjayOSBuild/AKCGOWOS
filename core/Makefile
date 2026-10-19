@@ -376,3 +376,15 @@ $(PKG_FMT_TARGET): $(PKG_FMT_SRCS)
 
 # Append to all target
 all: $(PKG_FMT_TARGET)
+
+# Package Manager: Metadata Registry Target
+PKG_META_TARGET := $(BUILD_DIR)/pkg_metadata
+PKG_META_SRCS := $(PKG_DIR)/package_metadata.cpp
+
+$(PKG_META_TARGET): $(PKG_META_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Package Metadata Registry..."
+	$(CXX) $(CXXFLAGS) -o $(PKG_META_TARGET) $(PKG_DIR)/package_metadata.cpp
+
+# Append to all target
+all: $(PKG_META_TARGET)
