@@ -55,6 +55,29 @@ public:
         std::cout << "[FileExplorer] Refreshed view. Loaded " << current_contents.size() << " entries.\n";
     }
 
+    // EXP-005: Address Bar input handler for direct path typing/navigation
+    void HandleAddressBarInput(const std::string& typed_path) {
+        std::cout << "[FileExplorer] Address bar submission: " << typed_path << "\n";
+        NavigateTo(typed_path);
+    }
+
+    // EXP-009: File and Folder Rename Operation
+    bool RenameItem(const std::string& old_path, const std::string& new_name) {
+        fs::path src(old_path);
+        fs::path dest = src.parent_path() / new_name;
+        std::error_code ec;
+        
+        fs::rename(src, dest, ec);
+        if (ec) {
+            std::cerr << "[!] Rename operation failed: " << ec.message() << "\n";
+            return false;
+        }
+        
+        std::cout << "[FileExplorer] Successfully renamed " << src.string() << " -> " << dest.string() << "\n";
+        RefreshContents();
+        return true;
+    }
+
     bool CopyItem(const std::string& source, const std::string& destination) {
         std::error_code ec;
         fs::copy(source, destination, fs::copy_options::recursive | fs::copy_options::overwrite_existing, ec);
@@ -89,7 +112,6 @@ public:
 
     void ShowContextMenu(int mouse_x, int mouse_y, const std::string& target_path) {
         std::cout << "[FileExplorer] Displaying Context Menu at (" << mouse_x << "," << mouse_y << ") for: " << target_path << "\n";
-        // Context Menu Actions: [Open, Copy, Delete to Trash, Properties]
     }
 
     void ShowPropertiesDialog(const std::string& path) {
@@ -113,7 +135,8 @@ public:
         font_engine.DrawText("Quick Access", 10, 50, 12, 0xFF000000);
         font_engine.DrawText("Volumes (/mnt)", 10, 80, 12, 0xFF000000);
 
-        font_engine.DrawText("Path: " + current_path, 210, 50, 12, 0xFF000000);
+        // Address Bar Path Display & Input Area simulation
+        font_engine.DrawText("Address: " + current_path, 210, 50, 12, 0xFF000000);
 
         int start_y = 80;
         for (const auto& item : current_contents) {

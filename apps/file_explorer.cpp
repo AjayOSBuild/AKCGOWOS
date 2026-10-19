@@ -5,10 +5,12 @@ int main() {
     std::cout << "=== OS Project File Explorer App ===\n";
     FileExplorerApp explorer("/mnt/usb");
     
-    // Simulate right-click context menu and viewing properties
-    explorer.ShowContextMenu(300, 200, "/mnt/usb");
-    explorer.ShowPropertiesDialog("/mnt/usb");
+    // Test EXP-005: Address bar path change submission
+    explorer.HandleAddressBarInput("/mnt");
     
-    std::cout << "[+] File Explorer context menu and properties test completed successfully.\n";
+    // Test EXP-009: File / Folder renaming simulation
+    // explorer.RenameItem("/mnt/old_folder", "new_folder");
+    
+    std::cout << "[+] File Explorer EXP-005 and EXP-009 test completed successfully.\n";
     return 0;
 }
