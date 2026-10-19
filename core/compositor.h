@@ -5,6 +5,15 @@
 #include <memory>
 #include <algorithm>
 
+enum class InputType { KEYBOARD, POINTER_MOVE, POINTER_CLICK };
+
+struct InputEvent {
+    InputType type;
+    int key_code; // For KEYBOARD
+    int x, y;     // For POINTER
+    bool pressed; // Key/Button state
+};
+
 struct WindowSurface {
     int surface_id;
     std::string title;
@@ -24,6 +33,16 @@ struct WindowSurface {
         height = new_height;
         std::cout << "[Compositor] Window #" << surface_id << " resized to " << width << "x" << height << "\n";
     }
+
+    void HandleInput(const InputEvent& event) {
+        if (event.type == InputType::KEYBOARD) {
+            std::cout << "[Window #" << surface_id << "] Received KEY " << (event.pressed ? "DOWN" : "UP") 
+                      << " (Code: " << event.key_code << ")\n";
+        } else if (event.type == InputType::POINTER_CLICK) {
+            std::cout << "[Window #" << surface_id << "] Received CLICK " << (event.pressed ? "DOWN" : "UP") 
+                      << " at relative (" << event.x - x << "," << event.y - y << ")\n";
+        }
+    }
 };
 
 class CompositorEngine {
@@ -32,7 +51,6 @@ private:
     int next_id = 1;
 
     void SortSurfaces() {
-        // Sort back-to-front based on z_index for Painter's algorithm rendering
         std::sort(surfaces.begin(), surfaces.end(), [](const WindowSurface& a, const WindowSurface& b) {
             return a.z_index < b.z_index;
         });
@@ -40,7 +58,7 @@ private:
 
 public:
     CompositorEngine() {
-        std::cout << "[Compositor] Graphics engine initialized with Window Management.\n";
+        std::cout << "[Compositor] Graphics engine initialized with Window Management & Input Routing.\n";
     }
 
     int CreateWindow(const std::string& title, int x, int y, int width, int height) {
@@ -57,14 +75,14 @@ public:
             if (surf.z_index > highest_z) {
                 highest_z = surf.z_index;
             }
-            surf.is_focused = false; // Remove focus from all
+            surf.is_focused = false;
         }
         
         for (auto& surf : surfaces) {
             if (surf.surface_id == surface_id) {
                 surf.is_focused = true;
-                surf.z_index = highest_z + 1; // Bring to front
-                std::cout << "[Compositor] Window #" << surface_id << " focused and brought to front (z_index=" << surf.z_index << ")\n";
+                surf.z_index = highest_z + 1;
+                std::cout << "[Compositor] Window #" << surface_id << " focused (z_index=" << surf.z_index << ")\n";
             }
         }
         SortSurfaces();
@@ -77,7 +95,18 @@ public:
         return nullptr;
     }
 
+    void DispatchInputEvent(const InputEvent& event) {
+        // Find the focused window
+        for (auto& surf : surfaces) {
+            if (surf.is_focused) {
+                surf.HandleInput(event);
+                return;
+            }
+        }
+        std::cout << "[Compositor] Warning: Input dropped, no window is currently focused.\n";
+    }
+
     void RenderFrame() {
-        // In full execution, this iterates through 'surfaces' and flushes buffer swaps via DRM/KMS
+        // KMS/DRM buffer swap logic goes here
     }
 };
