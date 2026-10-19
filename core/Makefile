@@ -412,3 +412,15 @@ $(PKG_RES_TARGET): $(PKG_RES_SRCS)
 
 # Append to all target
 all: $(PKG_RES_TARGET)
+
+# Package Manager: Installer Target
+PKG_INST_TARGET := $(BUILD_DIR)/pkg_installer
+PKG_INST_SRCS := $(PKG_DIR)/package_installer.cpp
+
+$(PKG_INST_TARGET):$(PKG_INST_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Package Installer..."
+	$(CXX)$(CXXFLAGS) -o $(PKG_INST_TARGET)$(PKG_DIR)/package_installer.cpp
+
+# Append to all target
+all: $(PKG_INST_TARGET)
