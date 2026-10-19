@@ -145,3 +145,14 @@ $(TERM_TARGET): ../apps/terminal.cpp ../apps/terminal.h
 
 # Append to all target (Hack to extend the current Makefile without rewriting everything)
 all: $(TERM_TARGET)
+
+# Task Manager App Target
+TM_TARGET := $(BUILD_DIR)/task_manager
+
+$(TM_TARGET): ../apps/task_manager.cpp ../apps/task_manager.h
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Task Manager..."
+	$(CXX) $(CXXFLAGS) -o $(TM_TARGET) ../apps/task_manager.cpp
+
+# Append to all target
+all: $(TM_TARGET)
