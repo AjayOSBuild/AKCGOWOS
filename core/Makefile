@@ -460,3 +460,15 @@ $(PKG_RB_TARGET): $(PKG_RB_SRCS)
 
 # Append to all target
 all: $(PKG_RB_TARGET)
+
+# Package Manager: Signatures Target
+PKG_SIG_TARGET := $(BUILD_DIR)/pkg_signatures
+PKG_SIG_SRCS := $(PKG_DIR)/package_signatures.cpp
+
+$(PKG_SIG_TARGET): $(PKG_SIG_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Package Signature Verifier..."
+	$(CXX) $(CXXFLAGS) -o $(PKG_SIG_TARGET) $(PKG_DIR)/package_signatures.cpp
+
+# Append to all target
+all: $(PKG_SIG_TARGET)
