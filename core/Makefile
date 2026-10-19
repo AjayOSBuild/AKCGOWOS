@@ -448,3 +448,15 @@ $(PKG_UPD_TARGET): $(PKG_UPD_SRCS)
 
 # Append to all target
 all: $(PKG_UPD_TARGET)
+
+# Package Manager: Rollback Target
+PKG_RB_TARGET := $(BUILD_DIR)/pkg_rollback
+PKG_RB_SRCS := $(PKG_DIR)/package_rollback.cpp
+
+$(PKG_RB_TARGET): $(PKG_RB_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Package Rollback Utility..."
+	$(CXX) $(CXXFLAGS) -o $(PKG_RB_TARGET) $(PKG_DIR)/package_rollback.cpp
+
+# Append to all target
+all: $(PKG_RB_TARGET)
