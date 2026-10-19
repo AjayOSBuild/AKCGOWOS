@@ -233,3 +233,14 @@ $(SYS_DM_TARGET): ../utilities/device_manager.cpp ../utilities/device_manager.h
 
 # Append to all target
 all: $(SYS_DM_TARGET)
+
+# System Disk Manager Utility Target
+SYS_DMGMT_TARGET := $(BUILD_DIR)/sys_disk_manager
+
+$(SYS_DMGMT_TARGET): ../utilities/disk_manager.cpp ../utilities/disk_manager.h
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling Advanced System Disk Management Utility..."
+	$(CXX) $(CXXFLAGS) -o $(SYS_DMGMT_TARGET) ../utilities/disk_manager.cpp
+
+# Append to all target
+all: $(SYS_DMGMT_TARGET)
