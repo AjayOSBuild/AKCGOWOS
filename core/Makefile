@@ -134,3 +134,14 @@ $(ANDROID_RUNNER_TARGET):$(ANDR_SRCS)
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ Android Compatibility Subsystem Runtime (android_runner)..."
 	$(CXX)$(CXXFLAGS) -o $(ANDROID_RUNNER_TARGET)$(ANDR_SRCS)
+
+# Terminal App Target
+TERM_TARGET := $(BUILD_DIR)/terminal
+
+$(TERM_TARGET): ../apps/terminal.cpp ../apps/terminal.h
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Terminal Emulator..."
+	$(CXX) $(CXXFLAGS) -o $(TERM_TARGET) ../apps/terminal.cpp
+
+# Append to all target (Hack to extend the current Makefile without rewriting everything)
+all: $(TERM_TARGET)
