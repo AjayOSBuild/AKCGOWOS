@@ -21,8 +21,23 @@ struct HardwareCursor {
     void Move(int new_x, int new_y) {
         x = new_x;
         y = new_y;
-        // Native DRM implementation calls drmModeMoveCursor() here
-        std::cout << "[Compositor:DRM] Hardware cursor updated to absolute (" << x << "," << y << ")\n";
+    }
+};
+
+// Font Rendering Abstraction (Prepares for FreeType integration)
+class FontRenderer {
+private:
+    std::string current_font_path;
+public:
+    bool LoadFont(const std::string& path) {
+        current_font_path = path;
+        std::cout << "[FontRenderer] Loaded UI font: " << path << "\n";
+        return true;
+    }
+
+    void DrawText(const std::string& text, int x, int y, int size) {
+        // In full execution, this rasters glyph bitmaps to the DRM buffer
+        // std::cout << "[FontRenderer] Drawing text '" << text << "' at (" << x << "," << y << ") size " << size << "\n";
     }
 };
 
@@ -57,6 +72,12 @@ struct WindowSurface {
             std::cout << "[Window #" << surface_id << "] Received HOVER at relative (" << event.x - x << "," << event.y - y << ")\n";
         }
     }
+
+    void Render(FontRenderer& font_engine) {
+        if (!visible) return;
+        // Draw Window Chrome / Title Bar
+        font_engine.DrawText(title, x + 5, y + 15, 12);
+    }
 };
 
 class CompositorEngine {
@@ -64,6 +85,7 @@ private:
     std::vector<WindowSurface> surfaces;
     int next_id = 1;
     HardwareCursor cursor;
+    FontRenderer font_engine;
 
     void SortSurfaces() {
         std::sort(surfaces.begin(), surfaces.end(), [](const WindowSurface& a, const WindowSurface& b) {
@@ -73,7 +95,8 @@ private:
 
 public:
     CompositorEngine() {
-        std::cout << "[Compositor] Graphics engine initialized with DRM Hardware Cursor support.\n";
+        std::cout << "[Compositor] Graphics engine initialized with DRM Hardware Cursor and Font support.\n";
+        font_engine.LoadFont("/usr/share/fonts/nexus-ui-regular.ttf");
     }
 
     int CreateWindow(const std::string& title, int x, int y, int width, int height) {
@@ -97,7 +120,6 @@ public:
             if (surf.surface_id == surface_id) {
                 surf.is_focused = true;
                 surf.z_index = highest_z + 1;
-                std::cout << "[Compositor] Window #" << surface_id << " focused (z_index=" << surf.z_index << ")\n";
             }
         }
         SortSurfaces();
@@ -111,24 +133,18 @@ public:
     }
 
     void DispatchInputEvent(const InputEvent& event) {
-        // 1. Update standalone hardware cursor plane
         if (event.type == InputType::POINTER_MOVE) {
             cursor.Move(event.x, event.y);
         }
 
-        // 2. Route the event to the focused window with bounding box checks
         for (auto& surf : surfaces) {
             if (surf.is_focused) {
                 if (event.type == InputType::POINTER_CLICK || event.type == InputType::POINTER_MOVE) {
-                     // Bounding box hit test
                      if (event.x >= surf.x && event.x <= surf.x + surf.width &&
                          event.y >= surf.y && event.y <= surf.y + surf.height) {
                          surf.HandleInput(event);
-                     } else if (event.type == InputType::POINTER_CLICK) {
-                         std::cout << "[Compositor] Click outside bounds of focused window #" << surf.surface_id << "\n";
                      }
                 } else {
-                    // Keyboard events go straight to focused window
                     surf.HandleInput(event);
                 }
                 return;
@@ -137,6 +153,11 @@ public:
     }
 
     void RenderFrame() {
-        // KMS/DRM buffer swap logic goes here
+        // 1. Clear DRM buffer
+        // 2. Render all surfaces back-to-front
+        for (auto& surf : surfaces) {
+            surf.Render(font_engine);
+        }
+        // 3. Swap buffers
     }
 };
