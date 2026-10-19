@@ -496,3 +496,15 @@ $(PKG_PERM_TARGET): $(PKG_PERM_SRCS)
 
 # Append to all target
 all: $(PKG_PERM_TARGET)
+
+# Package Manager: Sandbox Metadata Target
+PKG_SANDBOX_TARGET := $(BUILD_DIR)/pkg_sandbox
+PKG_SANDBOX_SRCS := $(PKG_DIR)/sandbox_metadata.cpp
+
+$(PKG_SANDBOX_TARGET): $(PKG_SANDBOX_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Package Sandbox Metadata Manager..."
+	$(CXX) $(CXXFLAGS) -o $(PKG_SANDBOX_TARGET) $(PKG_DIR)/sandbox_metadata.cpp
+
+# Append to all target
+all: $(PKG_SANDBOX_TARGET)
