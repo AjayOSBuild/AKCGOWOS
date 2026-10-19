@@ -38,3 +38,7 @@ We reject the traditional model where every user application runs with full acce
 ## 5. Filesystem Permissions & Access Control
 
 The Virtual Filesystem (VFS) abstraction layer enforces fine-grained permission checks (`VFSAuthorizer`) on every file open, read, and write request. Unprivileged application runtimes are strictly restricted from modifying system files or accessing other users' home directories without explicit authorization from the Permission Manager.
+
+## 6. Dynamic Permission Broker & Access Control
+
+The Ring 3 `PermissionManager` daemon enforces runtime security boundaries through the `SecurityPolicyEngine`. When sandboxed application runtimes attempt to access sensitive system resources (such as external storage, location telemetry, or video input), the request is intercepted and evaluated against persistent Access Control Lists (ACLs). Unrecognized scopes trigger a synchronous user consent prompt, ensuring no application can acquire unauthorized hardware access.
