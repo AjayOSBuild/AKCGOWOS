@@ -167,3 +167,14 @@ $(SET_TARGET): ../apps/settings.cpp ../apps/settings.h
 
 # Append to all target
 all: $(SET_TARGET)
+
+# Calculator App Target
+CALC_TARGET := $(BUILD_DIR)/calculator
+
+$(CALC_TARGET): ../apps/calculator.cpp ../apps/calculator.h
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Calculator App..."
+	$(CXX) $(CXXFLAGS) -o $(CALC_TARGET) ../apps/calculator.cpp
+
+# Append to all target
+all: $(CALC_TARGET)
