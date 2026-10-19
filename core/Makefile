@@ -472,3 +472,15 @@ $(PKG_SIG_TARGET): $(PKG_SIG_SRCS)
 
 # Append to all target
 all: $(PKG_SIG_TARGET)
+
+# Package Manager: Integrity Verifier Target
+PKG_INT_TARGET := $(BUILD_DIR)/pkg_integrity
+PKG_INT_SRCS := $(PKG_DIR)/integrity_verifier.cpp
+
+$(PKG_INT_TARGET): $(PKG_INT_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Package Integrity Verifier..."
+	$(CXX) $(CXXFLAGS) -o $(PKG_INT_TARGET) $(PKG_DIR)/integrity_verifier.cpp
+
+# Append to all target
+all: $(PKG_INT_TARGET)
