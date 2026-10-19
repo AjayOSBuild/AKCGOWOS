@@ -35,9 +35,7 @@ public:
     void FillRect(int x, int y, int width, int height, uint32_t color) {}
     void DrawRect(int x, int y, int width, int height, uint32_t color, int thickness) {}
     void DrawLine(int x1, int y1, int x2, int y2, uint32_t color, int thickness) {}
-    void DrawImage(const std::string& image_path, int x, int y, int width, int height) {
-        // In full execution, this decodes the image (e.g., PNG/JPEG) and blits the pixel buffer
-    }
+    void DrawImage(const std::string& image_path, int x, int y, int width, int height) {}
 };
 
 // --- Base Widget Architecture ---
@@ -101,7 +99,7 @@ public:
 
 // --- Standard Widgets ---
 class Button : public Widget {
-private:
+protected:
     std::string label;
     std::function<void()> on_click;
 public:
@@ -170,15 +168,13 @@ private:
     std::string image_path;
 public:
     ImageBox(const std::string& path) : image_path(path) {}
-    void SetImage(const std::string& path) { image_path = path; }
-    
     void Draw(Graphics2D& gfx, FontRenderer& font_engine) override {
         if (!visible) return;
         gfx.DrawImage(image_path, x, y, width, height);
     }
 };
 
-// --- Layout Managers ---
+// --- Layout Managers & Menus ---
 enum class LayoutDirection { VERTICAL, HORIZONTAL };
 
 class LinearLayout : public Container {
@@ -199,5 +195,60 @@ public:
                 current_x += child->width + spacing;
             }
         }
+    }
+};
+
+class MenuItem : public Button {
+public:
+    MenuItem(const std::string& text, std::function<void()> callback) : Button(text, callback) {}
+    void Draw(Graphics2D& gfx, FontRenderer& font_engine) override {
+        if (!visible) return;
+        uint32_t bg_color = is_hovered ? 0xFF4488FF : 0xFFFFFFFF; // Highlight blue on hover
+        uint32_t text_color = is_hovered ? 0xFFFFFFFF : 0xFF000000;
+        gfx.FillRect(x, y, width, height, bg_color);
+        font_engine.DrawText(label, x + 10, y + (height / 2) + 5, 12, text_color);
+    }
+};
+
+class Menu : public LinearLayout {
+public:
+    Menu() : LinearLayout(LayoutDirection::VERTICAL, 0) {
+        visible = false; // Hidden by default
+    }
+
+    void ShowAt(int start_x, int start_y) {
+        x = start_x;
+        y = start_y;
+        visible = true;
+        PerformLayout();
+    }
+
+    void OnEvent(UIEvent& event) override {
+        if (!visible) return;
+        
+        // Click-away dismissal
+        if (event.type == UIEventType::MOUSE_CLICK && event.pressed) {
+            if (!HitTest(event.x, event.y)) {
+                visible = false;
+                std::cout << "[Menu] Dismissed via click-away.\n";
+                // We do NOT handle the event here so the background can still process the click
+                return;
+            }
+        }
+        
+        LinearLayout::OnEvent(event);
+        
+        // If a menu item was clicked, close the menu
+        if (event.handled && event.type == UIEventType::MOUSE_CLICK) {
+            visible = false;
+        }
+    }
+
+    void Draw(Graphics2D& gfx, FontRenderer& font_engine) override {
+        if (!visible) return;
+        // Draw drop shadow or border for the menu container
+        gfx.FillRect(x, y, width, height, 0xFFDDDDDD);
+        gfx.DrawRect(x, y, width, height, 0xFF888888, 1);
+        LinearLayout::Draw(gfx, font_engine);
     }
 };
