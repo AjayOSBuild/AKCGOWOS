@@ -436,3 +436,15 @@ $(PKG_UNINST_TARGET):$(PKG_UNINST_SRCS)
 
 # Append to all target
 all: $(PKG_UNINST_TARGET)
+
+# Package Manager: Updater Target
+PKG_UPD_TARGET := $(BUILD_DIR)/pkg_updater
+PKG_UPD_SRCS := $(PKG_DIR)/package_updater.cpp
+
+$(PKG_UPD_TARGET): $(PKG_UPD_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Package Updater..."
+	$(CXX) $(CXXFLAGS) -o $(PKG_UPD_TARGET) $(PKG_DIR)/package_updater.cpp
+
+# Append to all target
+all: $(PKG_UPD_TARGET)
