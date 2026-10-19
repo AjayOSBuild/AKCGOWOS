@@ -2,6 +2,7 @@
 #include "../core/ui_toolkit.h"
 #include "../core/file_indexer.h"
 #include "../core/file_metadata.h"
+#include "../core/file_trash.h"
 #include <memory>
 #include <vector>
 #include <filesystem>
@@ -19,6 +20,7 @@ class FileExplorerApp {
 private:
     std::string current_path;
     FileIndexer indexer;
+    FileTrashManager trash_manager;
     std::vector<FileItemEntry> current_contents;
     
 public:
@@ -52,9 +54,40 @@ public:
         }
         std::cout << "[FileExplorer] Refreshed view. Loaded " << current_contents.size() << " entries.\n";
     }
+
+    bool CopyItem(const std::string& source, const std::string& destination) {
+        std::error_code ec;
+        fs::copy(source, destination, fs::copy_options::recursive | fs::copy_options::overwrite_existing, ec);
+        if (ec) {
+            std::cerr << "[!] Copy operation failed: " << ec.message() << "\n";
+            return false;
+        }
+        std::cout << "[FileExplorer] Successfully copied " << source << " -> " << destination << "\n";
+        RefreshContents();
+        return true;
+    }
+
+    bool MoveItem(const std::string& source, const std::string& destination) {
+        std::error_code ec;
+        fs::rename(source, destination, ec);
+        if (ec) {
+            std::cerr << "[!] Move operation failed: " << ec.message() << "\n";
+            return false;
+        }
+        std::cout << "[FileExplorer] Successfully moved " << source << " -> " << destination << "\n";
+        RefreshContents();
+        return true;
+    }
+
+    bool DeleteToTrash(const std::string& path) {
+        bool success = trash_manager.MoveToTrash(path);
+        if (success) {
+            RefreshContents();
+        }
+        return success;
+    }
     
     void RenderUI(Graphics2D& gfx, FontRenderer& font_engine) {
-        // Render split-pane layout: Sidebar on left, File grid on right
         gfx.FillRect(0, 30, 200, 738, 0xFFE0E0E0);
         gfx.DrawRect(0, 30, 200, 738, 0xFF888888, 1);
         
@@ -63,16 +96,14 @@ public:
         font_engine.DrawText("Quick Access", 10, 50, 12, 0xFF000000);
         font_engine.DrawText("Volumes (/mnt)", 10, 80, 12, 0xFF000000);
 
-        // Draw breadcrumb path header
         font_engine.DrawText("Path: " + current_path, 210, 50, 12, 0xFF000000);
 
-        // Draw file list items
         int start_y = 80;
         for (const auto& item : current_contents) {
             std::string prefix = item.is_directory ? "[DIR]  " : "[FILE] ";
             font_engine.DrawText(prefix + item.name, 210, start_y, 12, 0xFF000000);
             start_y += 20;
-            if (start_y > 720) break; // Viewport limit
+            if (start_y > 720) break;
         }
     }
     
