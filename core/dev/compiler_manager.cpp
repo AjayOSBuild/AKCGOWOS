@@ -1,9 +1,12 @@
 #include "compiler_manager.h"
 #include <cstdlib>
 #include <sstream>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 CompilerManager::CompilerManager() {
-    std::cout << "[CompilerManager] Initializing Clang Toolchain Support & Sanitizers...\n";
+    std::cout << "[CompilerManager] Initializing Rust Toolchain & Cargo Integration...\n";
     DetectToolchains();
 }
 
@@ -17,7 +20,7 @@ void CompilerManager::DetectToolchains() {
     ToolchainInfo rustc{"Rustc", "/usr/bin/rustc", "1.70.0", true};
     toolchains["rustc"] = rustc;
 
-    std::cout << "[CompilerManager] Clang toolchain registration verified.\n";
+    std::cout << "[CompilerManager] Rust toolchain detection successful.\n";
 }
 
 ToolchainInfo CompilerManager::GetToolchain(const std::string& name) const {
@@ -28,6 +31,37 @@ ToolchainInfo CompilerManager::GetToolchain(const std::string& name) const {
     return {"Unknown", "", "", false};
 }
 
+std::string CompilerManager::CompileRustProject(const std::string& project_dir, const RustBuildOptions& options) {
+    auto it = toolchains.find("rustc");
+    if (it == toolchains.end() || !it->second.is_available) {
+        return "ERROR: Rust toolchain is unavailable.";
+    }
+
+    std::stringstream cmd;
+    
+    // Check if project directory contains Cargo.toml
+    if (fs::exists(project_dir + "/Cargo.toml")) {
+        cmd << "cargo build --manifest-path " << project_dir << "/Cargo.toml ";
+        if (options.release_mode) {
+            cmd << "--release ";
+        }
+        if (!options.target_triple.empty()) {
+            cmd << "--target " << options.target_triple << " ";
+        }
+    } else {
+        return "ERROR: No Cargo.toml found in project directory.";
+    }
+
+    std::string final_command = cmd.str();
+    std::cout << "[CompilerManager] Executing Cargo build command: " << final_command << "\n";
+
+    int ret = system(final_command.c_str());
+    if (ret == 0) {
+        return "SUCCESS";
+    }
+    return "BUILD_FAILURE";
+}
+
 std::string CompilerManager::RunStaticAnalysis(const std::string& source_file, const BuildOptions& options) {
     std::stringstream cmd;
     cmd << "clang-tidy " << source_file << " -- ";
@@ -36,7 +70,6 @@ std::string CompilerManager::RunStaticAnalysis(const std::string& source_file, c
     }
     
     std::string analysis_cmd = cmd.str();
-    std::cout << "[CompilerManager] Running Clang Static Analysis: " << analysis_cmd << "\n";
     int ret = system(analysis_cmd.c_str());
     return (ret == 0) ? "ANALYSIS_PASSED" : "ANALYSIS_WARNINGS_FOUND";
 }
@@ -50,7 +83,6 @@ std::string CompilerManager::CompileProject(const std::string& toolchain_key,
         return "ERROR: Selected toolchain is unavailable.";
     }
 
-    // Optional static analysis pass if requested and using Clang
     if (options.run_static_analysis && toolchain_key == "clang") {
         for (const auto& src : source_files) {
             RunStaticAnalysis(src, options);
@@ -74,7 +106,6 @@ std::string CompilerManager::CompileProject(const std::string& toolchain_key,
         cmd << "-Werror ";
     }
 
-    // Clang-specific sanitizer integrations
     if (toolchain_key == "clang") {
         if (options.enable_address_sanitizer) {
             cmd << "-fsanitize=address -fno-omit-frame-pointer ";
@@ -96,8 +127,6 @@ std::string CompilerManager::CompileProject(const std::string& toolchain_key,
     }
 
     std::string final_command = cmd.str();
-    std::cout << "[CompilerManager] Executing Clang build command: " << final_command << "\n";
-
     int ret = system(final_command.c_str());
     if (ret == 0) {
         return "SUCCESS";
