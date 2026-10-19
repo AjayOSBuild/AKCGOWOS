@@ -44,6 +44,7 @@ PKG_INT_BIN="$BUILD_DIR/pkg_integrity"
 PKG_PERM_BIN="$BUILD_DIR/pkg_permissions"
 PKG_SANDBOX_BIN="$BUILD_DIR/pkg_sandbox"
 PKG_GUI_BIN="$BUILD_DIR/pkg_gui"
+PKG_DAEMON_BIN="$BUILD_DIR/pkg_daemon"
 NM_BIN="$BUILD_DIR/network_manager"
 UPM_BIN="$BUILD_DIR/update_manager"
 NS_BIN="$BUILD_DIR/notification_service"
@@ -78,6 +79,7 @@ PKG_INT_BIN="$BUILD_DIR/pkg_integrity"
 PKG_PERM_BIN="$BUILD_DIR/pkg_permissions"
 PKG_SANDBOX_BIN="$BUILD_DIR/pkg_sandbox"
 PKG_GUI_BIN="$BUILD_DIR/pkg_gui"
+PKG_DAEMON_BIN="$BUILD_DIR/pkg_daemon"
 TERM_BIN="$BUILD_DIR/terminal"
 TM_BIN="$BUILD_DIR/task_manager"
 SET_BIN="$BUILD_DIR/settings"
@@ -111,6 +113,7 @@ PKG_INT_BIN="$BUILD_DIR/pkg_integrity"
 PKG_PERM_BIN="$BUILD_DIR/pkg_permissions"
 PKG_SANDBOX_BIN="$BUILD_DIR/pkg_sandbox"
 PKG_GUI_BIN="$BUILD_DIR/pkg_gui"
+PKG_DAEMON_BIN="$BUILD_DIR/pkg_daemon"
 DS_BIN="$BUILD_DIR/desktop_shell"
 
 echo "[*] Generating initial RAM filesystem (initramfs)..."
@@ -143,9 +146,9 @@ cp "../../$NS_BIN" ./sbin/notification_service
 cp "../../$AM_BIN" ./sbin/application_manager
 cp "../../$PRM_BIN" ./sbin/process_manager
 cp "../../$SES_BIN" ./sbin/system_event_service
-cp "../../$COMP_BIN" ./sbin/compositor ./bin/terminal ./bin/task_manager ./bin/settings ./bin/calculator ./bin/text_editor ./bin/media_player ./bin/image_viewer ./bin/sys_task_manager ./bin/sys_device_manager ./bin/sys_disk_manager ./bin/sys_terminal ./bin/sys_settings_app ./bin/compiler_manager ./bin/git_manager ./bin/gdb_manager ./bin/lldb_manager ./bin/sdk_manager ./bin/pkg_tools ./bin/dev_terminal ./bin/ide_integration ./bin/pkg_format ./bin/pkg_metadata ./bin/pkg_repo ./bin/pkg_resolver ./bin/pkg_installer ./bin/pkg_uninstaller ./bin/pkg_updater ./bin/pkg_rollback ./bin/pkg_signatures ./bin/pkg_integrity ./bin/pkg_permissions ./bin/pkg_sandbox ./bin/pkg_gui
+cp "../../$COMP_BIN" ./sbin/compositor ./bin/terminal ./bin/task_manager ./bin/settings ./bin/calculator ./bin/text_editor ./bin/media_player ./bin/image_viewer ./bin/sys_task_manager ./bin/sys_device_manager ./bin/sys_disk_manager ./bin/sys_terminal ./bin/sys_settings_app ./bin/compiler_manager ./bin/git_manager ./bin/gdb_manager ./bin/lldb_manager ./bin/sdk_manager ./bin/pkg_tools ./bin/dev_terminal ./bin/ide_integration ./bin/pkg_format ./bin/pkg_metadata ./bin/pkg_repo ./bin/pkg_resolver ./bin/pkg_installer ./bin/pkg_uninstaller ./bin/pkg_updater ./bin/pkg_rollback ./bin/pkg_signatures ./bin/pkg_integrity ./bin/pkg_permissions ./bin/pkg_sandbox ./bin/pkg_gui ./bin/pkg_daemon
 cp "../../$DS_BIN" ./sbin/desktop_shell
-chmod +x ./init ./sbin/service_manager ./sbin/device_manager ./sbin/session_manager ./sbin/user_manager ./sbin/permission_manager ./sbin/configuration_service ./sbin/logging_service ./sbin/storage_manager ./sbin/network_manager ./sbin/update_manager ./sbin/notification_service ./sbin/application_manager ./sbin/process_manager ./sbin/system_event_service ./sbin/compositor ./bin/terminal ./bin/task_manager ./bin/settings ./bin/calculator ./bin/text_editor ./bin/media_player ./bin/image_viewer ./bin/sys_task_manager ./bin/sys_device_manager ./bin/sys_disk_manager ./bin/sys_terminal ./bin/sys_settings_app ./bin/compiler_manager ./bin/git_manager ./bin/gdb_manager ./bin/lldb_manager ./bin/sdk_manager ./bin/pkg_tools ./bin/dev_terminal ./bin/ide_integration ./bin/pkg_format ./bin/pkg_metadata ./bin/pkg_repo ./bin/pkg_resolver ./bin/pkg_installer ./bin/pkg_uninstaller ./bin/pkg_updater ./bin/pkg_rollback ./bin/pkg_signatures ./bin/pkg_integrity ./bin/pkg_permissions ./bin/pkg_sandbox ./bin/pkg_gui ./sbin/desktop_shell
+chmod +x ./init ./sbin/service_manager ./sbin/device_manager ./sbin/session_manager ./sbin/user_manager ./sbin/permission_manager ./sbin/configuration_service ./sbin/logging_service ./sbin/storage_manager ./sbin/network_manager ./sbin/update_manager ./sbin/notification_service ./sbin/application_manager ./sbin/process_manager ./sbin/system_event_service ./sbin/compositor ./bin/terminal ./bin/task_manager ./bin/settings ./bin/calculator ./bin/text_editor ./bin/media_player ./bin/image_viewer ./bin/sys_task_manager ./bin/sys_device_manager ./bin/sys_disk_manager ./bin/sys_terminal ./bin/sys_settings_app ./bin/compiler_manager ./bin/git_manager ./bin/gdb_manager ./bin/lldb_manager ./bin/sdk_manager ./bin/pkg_tools ./bin/dev_terminal ./bin/ide_integration ./bin/pkg_format ./bin/pkg_metadata ./bin/pkg_repo ./bin/pkg_resolver ./bin/pkg_installer ./bin/pkg_uninstaller ./bin/pkg_updater ./bin/pkg_rollback ./bin/pkg_signatures ./bin/pkg_integrity ./bin/pkg_permissions ./bin/pkg_sandbox ./bin/pkg_gui ./bin/pkg_daemon ./sbin/desktop_shell
 
 # Package into cpio archive and gzip
 find . -print0 | cpio --null -ov --format=newc 2>/dev/null | gzip -9 > "../initramfs.cpio.gz"

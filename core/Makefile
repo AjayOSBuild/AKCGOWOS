@@ -520,3 +520,15 @@ $(PKG_GUI_TARGET): $(PKG_GUI_SRCS)
 
 # Append to all target
 all: $(PKG_GUI_TARGET)
+
+# Package Manager: Daemon Target
+PKG_DAEMON_TARGET := $(BUILD_DIR)/pkg_daemon
+PKG_DAEMON_SRCS := $(PKG_DIR)/package_daemon.cpp
+
+$(PKG_DAEMON_TARGET): $(PKG_DAEMON_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Package Manager Daemon..."
+	$(CXX) $(CXXFLAGS) -o $(PKG_DAEMON_TARGET) $(PKG_DIR)/package_daemon.cpp
+
+# Append to all target
+all: $(PKG_DAEMON_TARGET)
