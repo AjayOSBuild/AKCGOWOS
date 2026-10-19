@@ -115,3 +115,13 @@ $(DS_TARGET): desktop_shell.cpp
 
 clean:
 	@rm -f $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET) $(LS_TARGET) $(STM_TARGET) $(NM_TARGET) $(UPM_TARGET) $(NS_TARGET) $(AM_TARGET) $(PRM_TARGET) $(SES_TARGET) $(COMP_TARGET) $(DS_TARGET)
+
+# Windows Compatibility Subsystem Target
+COMPAT_DIR := compat
+WIN_RUNNER_TARGET := $(BUILD_DIR)/win_runner
+COMPAT_SRCS := $(COMPAT_DIR)/win_runner.cpp $(COMPAT_DIR)/pe_loader.cpp $(COMPAT_DIR)/win32_translator.cpp $(COMPAT_DIR)/dx_translator.cpp $(COMPAT_DIR)/registry_virtualizer.cpp $(COMPAT_DIR)/path_redirector.cpp
+
+$(WIN_RUNNER_TARGET):$(COMPAT_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Windows Compatibility Subsystem Runtime (win_runner)..."
+	$(CXX)$(CXXFLAGS) -o $(WIN_RUNNER_TARGET)$(COMPAT_SRCS)
