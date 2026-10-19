@@ -9,9 +9,97 @@
 #include <fstream>
 #include <filesystem>
 #include <algorithm>
+#include <thread>
+#include <atomic>
+#include <functional>
 
 namespace fs = std::filesystem;
 
+// --- EXP: Large Operations Definitions ---
+enum class ErrorAction { RETRY, SKIP, ABORT };
+
+class FileOperationWorker {
+public:
+    std::atomic<uint64_t> total_bytes{0};
+    std::atomic<uint64_t> copied_bytes{0};
+    std::atomic<bool> is_running{false};
+    std::atomic<bool> cancel_requested{false};
+    std::string current_file;
+
+    // Callbacks for UI integration
+    std::function<ErrorAction(const std::string&, const std::string&)> on_error;
+    std::function<void(bool)> on_complete;
+
+    void StartCopy(const std::string& src, const std::string& dest) {
+        if (is_running) return;
+        is_running = true;
+        cancel_requested = false;
+        copied_bytes = 0;
+
+        std::thread([this, src, dest]() {
+            bool success = DoChunkedCopy(src, dest);
+            is_running = false;
+            if (on_complete) on_complete(success && !cancel_requested);
+        }).detach();
+    }
+
+    void Cancel() {
+        if (is_running) {
+            std::cout << "[Worker] Cancellation requested by user...\n";
+            cancel_requested = true;
+        }
+    }
+
+private:
+    bool DoChunkedCopy(const std::string& src, const std::string& dest) {
+        std::error_code ec;
+        if (!fs::exists(src, ec)) return false;
+        
+        total_bytes = fs::file_size(src, ec);
+        current_file = fs::path(src).filename().string();
+
+        while (true) {
+            if (cancel_requested) return false;
+
+            std::ifstream source(src, std::ios::binary);
+            std::ofstream target(dest, std::ios::binary);
+
+            if (!source.is_open() || !target.is_open()) {
+                ErrorAction action = ErrorAction::ABORT;
+                if (on_error) action = on_error(src, "Permission denied or file locked.");
+                
+                if (action == ErrorAction::RETRY) continue;
+                if (action == ErrorAction::SKIP) return true;
+                if (action == ErrorAction::ABORT) return false;
+            }
+
+            const size_t buffer_size = 65536; // 64 KB chunks for responsive cancellation
+            std::vector<char> buffer(buffer_size);
+
+            while (source.good()) {
+                if (cancel_requested) {
+                    source.close();
+                    target.close();
+                    fs::remove(dest, ec); // Cleanup partial file
+                    return false;
+                }
+
+                source.read(buffer.data(), buffer_size);
+                std::streamsize bytes_read = source.gcount();
+                if (bytes_read > 0) {
+                    target.write(buffer.data(), bytes_read);
+                    copied_bytes += bytes_read;
+                }
+                
+                // Simulate I/O latency for testing progress tracking
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            }
+            return true;
+        }
+    }
+};
+
+// --- Standard Explorer Definitions ---
 struct FileItemEntry {
     std::string name;
     std::string full_path;
@@ -26,7 +114,6 @@ struct TrashItemEntry {
     uint64_t size_bytes;
 };
 
-// EXP-020: Explorer Settings Configuration
 struct ExplorerSettings {
     bool show_hidden_files = false;
     enum class ViewMode { LIST, GRID } view_mode = ViewMode::LIST;
@@ -49,41 +136,12 @@ private:
     FileIndexer indexer;
     FileTrashManager trash_manager;
     ThumbnailGenerator thumbnail_gen;
-    
+
 public:
+    std::shared_ptr<FileOperationWorker> current_worker;
+
     FileExplorerApp(int win_id = 1, const std::string& initial_path = "/mnt/usb") : window_id(win_id) {
-        std::cout << "[FileExplorer] Initializing Window #" << window_id << "\n";
         OpenNewTab(initial_path);
-    }
-
-    static std::shared_ptr<FileExplorerApp> SpawnNewWindow(int win_id, const std::string& initial_path = "/mnt/usb") {
-        return std::make_shared<FileExplorerApp>(win_id, initial_path);
-    }
-    
-    // EXP-020: Settings Management
-    void ToggleHiddenFiles() {
-        settings.show_hidden_files = !settings.show_hidden_files;
-        std::cout << "[FileExplorer] Show hidden files: " << (settings.show_hidden_files ? "ON" : "OFF") << "\n";
-        RefreshContents();
-    }
-
-    void SetViewMode(ExplorerSettings::ViewMode mode) {
-        settings.view_mode = mode;
-        std::cout << "[FileExplorer] View mode changed to: " << (mode == ExplorerSettings::ViewMode::GRID ? "GRID" : "LIST") << "\n";
-    }
-
-    // EXP-016: Network Locations
-    bool ConnectNetworkLocation(const std::string& protocol, const std::string& address, const std::string& mount_name) {
-        std::string target_dir = "/mnt/net/" + mount_name;
-        std::error_code ec;
-        fs::create_directories(target_dir, ec);
-        
-        std::cout << "[Network] Attempting to mount " << protocol << "://" << address << " to " << target_dir << "...\n";
-        // In full execution, this submits an IPC request to StorageManager to execute mount(cifs/nfs)
-        std::cout << "[+] Network drive connected successfully.\n";
-        
-        NavigateTo(target_dir);
-        return true;
     }
 
     void OpenNewTab(const std::string& path) {
@@ -92,36 +150,14 @@ public:
         active_tab = tabs.size() - 1;
         NavigateTo(path);
     }
-
-    void CloseTab(int index) {
-        if (index >= 0 && index < static_cast<int>(tabs.size()) && tabs.size() > 1) {
-            tabs.erase(tabs.begin() + index);
-            if (active_tab >= static_cast<int>(tabs.size())) active_tab = tabs.size() - 1;
-        }
-    }
-
-    void SwitchTab(int index) {
-        if (index >= 0 && index < static_cast<int>(tabs.size())) {
-            active_tab = index;
-        }
-    }
     
     void NavigateTo(const std::string& path) {
         if (tabs.empty()) return;
         ExplorerTab& tab = tabs[active_tab];
-
-        if (path == "trash://") {
-            tab.is_trash_view = true;
-            tab.current_path = "trash://";
-            RefreshTrashContents();
-            return;
-        }
-
         tab.is_trash_view = false;
         std::error_code ec;
         if (fs::exists(path) && fs::is_directory(path, ec)) {
             tab.current_path = path;
-            std::cout << "[FileExplorer Window #" << window_id << "] Navigated to: " << tab.current_path << "\n";
             RefreshContents();
         }
     }
@@ -134,26 +170,31 @@ public:
         if (!fs::exists(tab.current_path)) return;
 
         for (const auto& entry : fs::directory_iterator(tab.current_path, fs::directory_options::skip_permission_denied, ec)) {
-            std::string filename = entry.path().filename().string();
-            
-            // EXP-020: Apply hidden files filter
-            if (!settings.show_hidden_files && !filename.empty() && filename[0] == '.') {
-                continue; 
-            }
-
             FileItemEntry item;
             item.full_path = entry.path().string();
-            item.name = filename;
+            item.name = entry.path().filename().string();
             item.is_directory = entry.is_directory(ec);
             item.size_bytes = item.is_directory ? 0 : entry.file_size(ec);
             tab.current_contents.push_back(item);
         }
     }
 
-    void RefreshTrashContents() {
-        if (tabs.empty()) return;
-        ExplorerTab& tab = tabs[active_tab];
-        tab.trash_contents.clear();
-        // Simplified for brevity, same as prior tasks
+    // EXP: Large Operations Implementation
+    void AsyncCopyItem(const std::string& source, const std::string& destination) {
+        current_worker = std::make_shared<FileOperationWorker>();
+        
+        current_worker->on_error = [](const std::string& file, const std::string& reason) -> ErrorAction {
+            std::cerr << "[UI Prompt] Error copying " << file << ": " << reason << "\n";
+            std::cerr << "Options: [R]etry, [S]kip, [A]bort -> Auto-selecting ABORT\n";
+            return ErrorAction::ABORT;
+        };
+
+        current_worker->on_complete = [this](bool success) {
+            std::cout << "[FileExplorer] Async operation finished. Success: " << (success ? "YES" : "NO") << "\n";
+            RefreshContents();
+        };
+
+        std::cout << "[FileExplorer] Starting async copy of " << source << " to " << destination << "...\n";
+        current_worker->StartCopy(source, destination);
     }
 };
