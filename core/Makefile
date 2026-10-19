@@ -351,3 +351,15 @@ $(DEV_TERM_TARGET): $(DEV_TERM_SRCS)
 
 # Append to all target
 all: $(DEV_TERM_TARGET)
+
+# Developer Environment: IDE Integration Target
+DEV_IDE_TARGET := $(BUILD_DIR)/ide_integration
+DEV_IDE_SRCS := $(DEV_DIR)/ide_integration.cpp
+
+$(DEV_IDE_TARGET):$(DEV_IDE_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ IDE Integration Broker..."
+	$(CXX)$(CXXFLAGS) -o $(DEV_IDE_TARGET)$(DEV_DIR)/ide_integration.cpp
+
+# Append to all target
+all: $(DEV_IDE_TARGET)
