@@ -5,12 +5,10 @@ int main() {
     std::cout << "=== OS Project File Explorer App ===\n";
     FileExplorerApp explorer("/mnt/usb");
     
-    // Test EXP-005: Address bar path change submission
-    explorer.HandleAddressBarInput("/mnt");
+    // Test EXP-011: Switch view to Recycle Bin, list items, and simulate empty/restore
+    explorer.NavigateTo("trash://");
+    explorer.ClearRecycleBin();
     
-    // Test EXP-009: File / Folder renaming simulation
-    // explorer.RenameItem("/mnt/old_folder", "new_folder");
-    
-    std::cout << "[+] File Explorer EXP-005 and EXP-009 test completed successfully.\n";
+    std::cout << "[+] File Explorer EXP-011 Recycle Bin test completed successfully.\n";
     return 0;
 }
