@@ -9,10 +9,20 @@ int main() {
 
     CompositorEngine compositor;
 
-    // Create a mock desktop background or taskbar shell surface
-    compositor.CreateWindow("Nexus Desktop Shell", 0, 0, 1024, 768);
+    // Create background and test windows
+    int bg_id = compositor.CreateWindow("Nexus Desktop Shell", 0, 0, 1024, 768);
+    int app1_id = compositor.CreateWindow("Terminal", 100, 100, 800, 600);
+    int app2_id = compositor.CreateWindow("File Explorer", 150, 150, 800, 600);
 
-    std::cout << "[+] Compositor active. Entering 60fps render loop...\n";
+    // Simulate window management actions
+    if (auto win = compositor.GetWindow(app1_id)) {
+        win->Move(120, 120);
+    }
+    
+    // Bring Terminal back to the front
+    compositor.SetFocus(app1_id);
+
+    std::cout << "[+] Compositor active. Entering 60fps render loop with z-order management...\n";
 
     while (true) {
         compositor.RenderFrame();
