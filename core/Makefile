@@ -484,3 +484,15 @@ $(PKG_INT_TARGET): $(PKG_INT_SRCS)
 
 # Append to all target
 all: $(PKG_INT_TARGET)
+
+# Package Manager: Permissions Target
+PKG_PERM_TARGET := $(BUILD_DIR)/pkg_permissions
+PKG_PERM_SRCS := $(PKG_DIR)/package_permissions.cpp
+
+$(PKG_PERM_TARGET): $(PKG_PERM_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Package Permissions Manager..."
+	$(CXX) $(CXXFLAGS) -o $(PKG_PERM_TARGET) $(PKG_DIR)/package_permissions.cpp
+
+# Append to all target
+all: $(PKG_PERM_TARGET)
