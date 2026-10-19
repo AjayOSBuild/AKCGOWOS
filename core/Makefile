@@ -400,3 +400,15 @@ $(PKG_REPO_TARGET): $(PKG_REPO_SRCS)
 
 # Append to all target
 all: $(PKG_REPO_TARGET)
+
+# Package Manager: Dependency Resolver Target
+PKG_RES_TARGET := $(BUILD_DIR)/pkg_resolver
+PKG_RES_SRCS := $(PKG_DIR)/dependency_resolver.cpp
+
+$(PKG_RES_TARGET): $(PKG_RES_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Package Dependency Resolver..."
+	$(CXX) $(CXXFLAGS) -o $(PKG_RES_TARGET) $(PKG_DIR)/dependency_resolver.cpp
+
+# Append to all target
+all: $(PKG_RES_TARGET)
