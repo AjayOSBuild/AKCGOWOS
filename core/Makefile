@@ -178,3 +178,14 @@ $(CALC_TARGET): ../apps/calculator.cpp ../apps/calculator.h
 
 # Append to all target
 all: $(CALC_TARGET)
+
+# Text Editor App Target
+TE_TARGET := $(BUILD_DIR)/text_editor
+
+$(TE_TARGET): ../apps/text_editor.cpp ../apps/text_editor.h
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Text Editor App..."
+	$(CXX) $(CXXFLAGS) -o $(TE_TARGET) ../apps/text_editor.cpp
+
+# Append to all target
+all: $(TE_TARGET)
