@@ -303,3 +303,15 @@ $(DEV_GDB_TARGET): $(DEV_GDB_SRCS)
 
 # Append to all target
 all: $(DEV_GDB_TARGET)
+
+# Developer Environment: LLDB Manager Target
+DEV_LLDB_TARGET := $(BUILD_DIR)/lldb_manager
+DEV_LLDB_SRCS := $(DEV_DIR)/lldb_manager.cpp
+
+$(DEV_LLDB_TARGET): $(DEV_LLDB_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ LLDB Debugger Manager..."
+	$(CXX) $(CXXFLAGS) -o $(DEV_LLDB_TARGET) $(DEV_DIR)/lldb_manager.cpp
+
+# Append to all target
+all: $(DEV_LLDB_TARGET)
