@@ -508,3 +508,15 @@ $(PKG_SANDBOX_TARGET): $(PKG_SANDBOX_SRCS)
 
 # Append to all target
 all: $(PKG_SANDBOX_TARGET)
+
+# Package Manager: GUI Target
+PKG_GUI_TARGET := $(BUILD_DIR)/pkg_gui
+PKG_GUI_SRCS := $(PKG_DIR)/package_gui.cpp
+
+$(PKG_GUI_TARGET): $(PKG_GUI_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Package Manager GUI..."
+	$(CXX) $(CXXFLAGS) -o $(PKG_GUI_TARGET) $(PKG_DIR)/package_gui.cpp
+
+# Append to all target
+all: $(PKG_GUI_TARGET)
