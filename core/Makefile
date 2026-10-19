@@ -315,3 +315,15 @@ $(DEV_LLDB_TARGET): $(DEV_LLDB_SRCS)
 
 # Append to all target
 all: $(DEV_LLDB_TARGET)
+
+# Developer Environment: SDK Manager Target
+DEV_SDK_TARGET := $(BUILD_DIR)/sdk_manager
+DEV_SDK_SRCS := $(DEV_DIR)/sdk_manager.cpp
+
+$(DEV_SDK_TARGET): $(DEV_SDK_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Software Development Kit (SDK) Manager..."
+	$(CXX) $(CXXFLAGS) -o $(DEV_SDK_TARGET) $(DEV_DIR)/sdk_manager.cpp
+
+# Append to all target
+all: $(DEV_SDK_TARGET)
