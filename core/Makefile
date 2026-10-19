@@ -211,3 +211,14 @@ $(IV_TARGET): ../apps/image_viewer.cpp ../apps/image_viewer.h
 
 # Append to all target
 all: $(IV_TARGET)
+
+# System Task Manager Utility Target
+SYS_TM_TARGET := $(BUILD_DIR)/sys_task_manager
+
+$(SYS_TM_TARGET): ../utilities/task_manager.cpp ../utilities/task_manager.h
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling Advanced System Task Manager Utility..."
+	$(CXX) $(CXXFLAGS) -o $(SYS_TM_TARGET) ../utilities/task_manager.cpp
+
+# Append to all target
+all: $(SYS_TM_TARGET)
