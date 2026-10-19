@@ -279,3 +279,15 @@ $(DEV_CM_TARGET): $(DEV_SRCS)
 
 # Append to all target
 all: $(DEV_CM_TARGET)
+
+# Developer Environment: Git Manager Target
+DEV_GM_TARGET := $(BUILD_DIR)/git_manager
+DEV_GM_SRCS := $(DEV_DIR)/git_manager.cpp
+
+$(DEV_GM_TARGET): $(DEV_GM_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Git Version Control Manager..."
+	$(CXX) $(CXXFLAGS) -o $(DEV_GM_TARGET) $(DEV_DIR)/git_manager.cpp
+
+# Append to all target
+all: $(DEV_GM_TARGET)
