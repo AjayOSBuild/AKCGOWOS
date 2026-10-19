@@ -6,7 +6,7 @@
 namespace fs = std::filesystem;
 
 CompilerManager::CompilerManager() {
-    std::cout << "[CompilerManager] Initializing Rust Toolchain & Cargo Integration...\n";
+    std::cout << "[CompilerManager] Initializing Python & Scripting Toolchain Support...\n";
     DetectToolchains();
 }
 
@@ -20,7 +20,10 @@ void CompilerManager::DetectToolchains() {
     ToolchainInfo rustc{"Rustc", "/usr/bin/rustc", "1.70.0", true};
     toolchains["rustc"] = rustc;
 
-    std::cout << "[CompilerManager] Rust toolchain detection successful.\n";
+    ToolchainInfo python{"Python3", "/usr/bin/python3", "3.10.12", true};
+    toolchains["python3"] = python;
+
+    std::cout << "[CompilerManager] Python toolchain detection successful.\n";
 }
 
 ToolchainInfo CompilerManager::GetToolchain(const std::string& name) const {
@@ -31,6 +34,45 @@ ToolchainInfo CompilerManager::GetToolchain(const std::string& name) const {
     return {"Unknown", "", "", false};
 }
 
+std::string CompilerManager::RunPythonScript(const std::string& script_path, const std::vector<std::string>& args) {
+    auto it = toolchains.find("python3");
+    if (it == toolchains.end() || !it->second.is_available) {
+        return "ERROR: Python3 toolchain is unavailable.";
+    }
+
+    if (!fs::exists(script_path)) {
+        return "ERROR: Script file not found: " + script_path;
+    }
+
+    std::stringstream cmd;
+    cmd << it->second.executable_path << " " << script_path << " ";
+    for (const auto& arg : args) {
+        cmd << arg << " ";
+    }
+
+    std::string final_command = cmd.str();
+    std::cout << "[CompilerManager] Executing Python script: " << final_command << "\n";
+
+    int ret = system(final_command.c_str());
+    return (ret == 0) ? "SUCCESS" : "SCRIPT_EXECUTION_FAILURE";
+}
+
+std::string CompilerManager::CreatePythonVirtualEnv(const std::string& venv_path) {
+    auto it = toolchains.find("python3");
+    if (it == toolchains.end() || !it->second.is_available) {
+        return "ERROR: Python3 toolchain is unavailable.";
+    }
+
+    std::stringstream cmd;
+    cmd << it->second.executable_path << " -m venv " << venv_path;
+
+    std::string final_command = cmd.str();
+    std::cout << "[CompilerManager] Creating Python virtual environment at " << venv_path << ": " << final_command << "\n";
+
+    int ret = system(final_command.c_str());
+    return (ret == 0) ? "SUCCESS" : "VENV_CREATION_FAILURE";
+}
+
 std::string CompilerManager::CompileRustProject(const std::string& project_dir, const RustBuildOptions& options) {
     auto it = toolchains.find("rustc");
     if (it == toolchains.end() || !it->second.is_available) {
@@ -38,28 +80,16 @@ std::string CompilerManager::CompileRustProject(const std::string& project_dir, 
     }
 
     std::stringstream cmd;
-    
-    // Check if project directory contains Cargo.toml
     if (fs::exists(project_dir + "/Cargo.toml")) {
         cmd << "cargo build --manifest-path " << project_dir << "/Cargo.toml ";
-        if (options.release_mode) {
-            cmd << "--release ";
-        }
-        if (!options.target_triple.empty()) {
-            cmd << "--target " << options.target_triple << " ";
-        }
+        if (options.release_mode) cmd << "--release ";
+        if (!options.target_triple.empty()) cmd << "--target " << options.target_triple << " ";
     } else {
         return "ERROR: No Cargo.toml found in project directory.";
     }
 
-    std::string final_command = cmd.str();
-    std::cout << "[CompilerManager] Executing Cargo build command: " << final_command << "\n";
-
-    int ret = system(final_command.c_str());
-    if (ret == 0) {
-        return "SUCCESS";
-    }
-    return "BUILD_FAILURE";
+    int ret = system(cmd.str().c_str());
+    return (ret == 0) ? "SUCCESS" : "BUILD_FAILURE";
 }
 
 std::string CompilerManager::RunStaticAnalysis(const std::string& source_file, const BuildOptions& options) {
@@ -68,9 +98,7 @@ std::string CompilerManager::RunStaticAnalysis(const std::string& source_file, c
     for (const auto& inc : options.include_dirs) {
         cmd << "-I" << inc << " ";
     }
-    
-    std::string analysis_cmd = cmd.str();
-    int ret = system(analysis_cmd.c_str());
+    int ret = system(cmd.str().c_str());
     return (ret == 0) ? "ANALYSIS_PASSED" : "ANALYSIS_WARNINGS_FOUND";
 }
 
@@ -84,52 +112,25 @@ std::string CompilerManager::CompileProject(const std::string& toolchain_key,
     }
 
     if (options.run_static_analysis && toolchain_key == "clang") {
-        for (const auto& src : source_files) {
-            RunStaticAnalysis(src, options);
-        }
+        for (const auto& src : source_files) RunStaticAnalysis(src, options);
     }
 
     std::stringstream cmd;
     cmd << it->second.executable_path << " ";
-
-    for (const auto& src : source_files) {
-        cmd << src << " ";
-    }
-
-    cmd << "-o " << output_file << " ";
-    cmd << options.optimization_level << " ";
-
-    if (options.enable_warnings) {
-        cmd << "-Wall -Wextra ";
-    }
-    if (options.treat_warnings_as_errors) {
-        cmd << "-Werror ";
-    }
+    for (const auto& src : source_files) cmd << src << " ";
+    cmd << "-o " << output_file << " " << options.optimization_level << " ";
+    if (options.enable_warnings) cmd << "-Wall -Wextra ";
+    if (options.treat_warnings_as_errors) cmd << "-Werror ";
 
     if (toolchain_key == "clang") {
-        if (options.enable_address_sanitizer) {
-            cmd << "-fsanitize=address -fno-omit-frame-pointer ";
-        }
-        if (options.enable_undefined_sanitizer) {
-            cmd << "-fsanitize=undefined ";
-        }
+        if (options.enable_address_sanitizer) cmd << "-fsanitize=address -fno-omit-frame-pointer ";
+        if (options.enable_undefined_sanitizer) cmd << "-fsanitize=undefined ";
     }
 
-    for (const auto& inc : options.include_dirs) {
-        cmd << "-I" << inc << " ";
-    }
+    for (const auto& inc : options.include_dirs) cmd << "-I" << inc << " ";
+    for (const auto& libdir : options.library_dirs) cmd << "-L" << libdir << " ";
+    for (const auto& lib : options.libraries) cmd << "-l" << lib << " ";
 
-    for (const auto& libdir : options.library_dirs) {
-        cmd << "-L" << libdir << " ";
-    }
-    for (const auto& lib : options.libraries) {
-        cmd << "-l" << lib << " ";
-    }
-
-    std::string final_command = cmd.str();
-    int ret = system(final_command.c_str());
-    if (ret == 0) {
-        return "SUCCESS";
-    }
-    return "BUILD_FAILURE";
+    int ret = system(cmd.str().c_str());
+    return (ret == 0) ? "SUCCESS" : "BUILD_FAILURE";
 }

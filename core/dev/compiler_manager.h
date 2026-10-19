@@ -24,8 +24,8 @@ struct BuildOptions {
 };
 
 struct RustBuildOptions {
-    bool release_mode = false;          // --release flag for cargo
-    std::string target_triple = "";     // e.g., x86_64-unknown-linux-gnu
+    bool release_mode = false;
+    std::string target_triple = "";
     std::vector<std::string> extra_flags;
 };
 
@@ -42,5 +42,7 @@ public:
                                const std::string& output_file, 
                                const BuildOptions& options);
     std::string CompileRustProject(const std::string& project_dir, const RustBuildOptions& options);
+    std::string RunPythonScript(const std::string& script_path, const std::vector<std::string>& args);
+    std::string CreatePythonVirtualEnv(const std::string& venv_path);
     std::string RunStaticAnalysis(const std::string& source_file, const BuildOptions& options);
 };
