@@ -156,3 +156,14 @@ $(TM_TARGET): ../apps/task_manager.cpp ../apps/task_manager.h
 
 # Append to all target
 all: $(TM_TARGET)
+
+# Settings App Target
+SET_TARGET := $(BUILD_DIR)/settings
+
+$(SET_TARGET): ../apps/settings.cpp ../apps/settings.h
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ System Settings UI..."
+	$(CXX) $(CXXFLAGS) -o $(SET_TARGET) ../apps/settings.cpp
+
+# Append to all target
+all: $(SET_TARGET)
