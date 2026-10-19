@@ -125,3 +125,12 @@ $(WIN_RUNNER_TARGET):$(COMPAT_SRCS)
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ Windows Compatibility Subsystem Runtime (win_runner)..."
 	$(CXX)$(CXXFLAGS) -o $(WIN_RUNNER_TARGET)$(COMPAT_SRCS)
+
+# Android Compatibility Subsystem Target
+ANDROID_RUNNER_TARGET := $(BUILD_DIR)/android_runner
+ANDR_SRCS := $(COMPAT_DIR)/android_runner.cpp $(COMPAT_DIR)/apk_parser.cpp $(COMPAT_DIR)/android_container.cpp $(COMPAT_DIR)/android_graphics_bridge.cpp $(COMPAT_DIR)/android_input_bridge.cpp $(COMPAT_DIR)/android_binder_bridge.cpp
+
+$(ANDROID_RUNNER_TARGET):$(ANDR_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Android Compatibility Subsystem Runtime (android_runner)..."
+	$(CXX)$(CXXFLAGS) -o $(ANDROID_RUNNER_TARGET)$(ANDR_SRCS)
