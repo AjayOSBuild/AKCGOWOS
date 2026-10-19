@@ -86,6 +86,23 @@ public:
         }
         return success;
     }
+
+    void ShowContextMenu(int mouse_x, int mouse_y, const std::string& target_path) {
+        std::cout << "[FileExplorer] Displaying Context Menu at (" << mouse_x << "," << mouse_y << ") for: " << target_path << "\n";
+        // Context Menu Actions: [Open, Copy, Delete to Trash, Properties]
+    }
+
+    void ShowPropertiesDialog(const std::string& path) {
+        FileMetadata meta;
+        if (MetadataExtractor::GetMetadata(path, meta)) {
+            std::cout << "=== Properties Dialog ===\n";
+            std::cout << "Path: " << meta.path << "\n";
+            std::cout << "Size: " << meta.size_bytes << " bytes\n";
+            std::cout << "Type: " << (meta.is_directory ? "Folder" : "File") << "\n";
+            std::cout << "Modified: " << meta.modified_time << "\n";
+            std::cout << "=========================\n";
+        }
+    }
     
     void RenderUI(Graphics2D& gfx, FontRenderer& font_engine) {
         gfx.FillRect(0, 30, 200, 738, 0xFFE0E0E0);
