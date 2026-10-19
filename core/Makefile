@@ -339,3 +339,15 @@ $(DEV_PKG_TARGET): $(DEV_PKG_SRCS)
 
 # Append to all target
 all: $(DEV_PKG_TARGET)
+
+# Developer Environment: Development Terminal Target
+DEV_TERM_TARGET := $(BUILD_DIR)/dev_terminal
+DEV_TERM_SRCS := $(DEV_DIR)/dev_terminal.cpp
+
+$(DEV_TERM_TARGET): $(DEV_TERM_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Development Terminal..."
+	$(CXX) $(CXXFLAGS) -o $(DEV_TERM_TARGET) $(DEV_DIR)/dev_terminal.cpp
+
+# Append to all target
+all: $(DEV_TERM_TARGET)
