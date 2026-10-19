@@ -189,3 +189,14 @@ $(TE_TARGET): ../apps/text_editor.cpp ../apps/text_editor.h
 
 # Append to all target
 all: $(TE_TARGET)
+
+# Media Player App Target
+MP_TARGET := $(BUILD_DIR)/media_player
+
+$(MP_TARGET): ../apps/media_player.cpp ../apps/media_player.h
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Media Player App..."
+	$(CXX) $(CXXFLAGS) -o $(MP_TARGET) ../apps/media_player.cpp
+
+# Append to all target
+all: $(MP_TARGET)
