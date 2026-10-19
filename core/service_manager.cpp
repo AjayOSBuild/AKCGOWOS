@@ -60,6 +60,7 @@ int main() {
     services.emplace("ProcessManager", Service("ProcessManager", "/sbin/process_manager"));
     services.emplace("SystemEventService", Service("SystemEventService", "/sbin/system_event_service"));
     services.emplace("Compositor", Service("Compositor", "/sbin/compositor"));
+    services.emplace("DesktopShell", Service("DesktopShell", "/sbin/desktop_shell"));
     services.emplace("SessionManager", Service("SessionManager", "/sbin/session_manager"));
     services.emplace("UserManager", Service("UserManager", "/sbin/user_manager"));
     services.emplace("PermissionManager", Service("PermissionManager", "/sbin/permission_manager"));

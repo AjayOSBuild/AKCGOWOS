@@ -17,6 +17,7 @@ AM_TARGET := $(BUILD_DIR)/application_manager
 PRM_TARGET := $(BUILD_DIR)/process_manager
 SES_TARGET := $(BUILD_DIR)/system_event_service
 COMP_TARGET := $(BUILD_DIR)/compositor
+DS_TARGET := $(BUILD_DIR)/desktop_shell
 
 CC := gcc
 CXX := g++
@@ -25,87 +26,92 @@ CXXFLAGS := -Wall -Wextra -static -O2 -std=c++17
 
 .PHONY: all clean
 
-all: $(INIT_TARGET)$(SM_TARGET) $(DM_TARGET)$(SESS_TARGET) $(UM_TARGET)$(PM_TARGET) $(CS_TARGET)$(LS_TARGET) $(STM_TARGET)$(NM_TARGET) $(UPM_TARGET)$(NS_TARGET) $(AM_TARGET)$(PRM_TARGET) $(SES_TARGET)$(COMP_TARGET)
+all: $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET) $(LS_TARGET) $(STM_TARGET) $(NM_TARGET) $(UPM_TARGET) $(NS_TARGET) $(AM_TARGET) $(PRM_TARGET) $(SES_TARGET) $(COMP_TARGET) $(DS_TARGET)
 
 $(INIT_TARGET): init.c
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling core init daemon..."
-	$(CC) $(CFLAGS) -o$(INIT_TARGET) init.c
+	$(CC) $(CFLAGS) -o $(INIT_TARGET) init.c
 
 $(SM_TARGET): service_manager.cpp
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ Service Manager..."
-	$(CXX) $(CXXFLAGS) -o$(SM_TARGET) service_manager.cpp
+	$(CXX) $(CXXFLAGS) -o $(SM_TARGET) service_manager.cpp
 
 $(DM_TARGET): device_manager.cpp
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ Device Manager..."
-	$(CXX) $(CXXFLAGS) -o$(DM_TARGET) device_manager.cpp
+	$(CXX) $(CXXFLAGS) -o $(DM_TARGET) device_manager.cpp
 
 $(SESS_TARGET): session_manager.cpp
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ Session Manager..."
-	$(CXX) $(CXXFLAGS) -o$(SESS_TARGET) session_manager.cpp
+	$(CXX) $(CXXFLAGS) -o $(SESS_TARGET) session_manager.cpp
 
 $(UM_TARGET): user_manager.cpp
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ User Manager..."
-	$(CXX) $(CXXFLAGS) -o$(UM_TARGET) user_manager.cpp
+	$(CXX) $(CXXFLAGS) -o $(UM_TARGET) user_manager.cpp
 
 $(PM_TARGET): permission_manager.cpp
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ Permission Manager..."
-	$(CXX) $(CXXFLAGS) -o$(PM_TARGET) permission_manager.cpp
+	$(CXX) $(CXXFLAGS) -o $(PM_TARGET) permission_manager.cpp
 
 $(CS_TARGET): configuration_service.cpp
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ Configuration Service..."
-	$(CXX) $(CXXFLAGS) -o$(CS_TARGET) configuration_service.cpp
+	$(CXX) $(CXXFLAGS) -o $(CS_TARGET) configuration_service.cpp
 
 $(LS_TARGET): logging_service.cpp
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ Logging Service..."
-	$(CXX) $(CXXFLAGS) -o$(LS_TARGET) logging_service.cpp
+	$(CXX) $(CXXFLAGS) -o $(LS_TARGET) logging_service.cpp
 
 $(STM_TARGET): storage_manager.cpp
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ Storage Manager..."
-	$(CXX) $(CXXFLAGS) -o$(STM_TARGET) storage_manager.cpp
+	$(CXX) $(CXXFLAGS) -o $(STM_TARGET) storage_manager.cpp
 
 $(NM_TARGET): network_manager.cpp
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ Network Manager..."
-	$(CXX) $(CXXFLAGS) -o$(NM_TARGET) network_manager.cpp
+	$(CXX) $(CXXFLAGS) -o $(NM_TARGET) network_manager.cpp
 
 $(UPM_TARGET): update_manager.cpp
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ Update Manager..."
-	$(CXX) $(CXXFLAGS) -o$(UPM_TARGET) update_manager.cpp
+	$(CXX) $(CXXFLAGS) -o $(UPM_TARGET) update_manager.cpp
 
 $(NS_TARGET): notification_service.cpp
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ Notification Service..."
-	$(CXX) $(CXXFLAGS) -o$(NS_TARGET) notification_service.cpp
+	$(CXX) $(CXXFLAGS) -o $(NS_TARGET) notification_service.cpp
 
 $(AM_TARGET): application_manager.cpp
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ Application Manager..."
-	$(CXX) $(CXXFLAGS) -o$(AM_TARGET) application_manager.cpp
+	$(CXX) $(CXXFLAGS) -o $(AM_TARGET) application_manager.cpp
 
 $(PRM_TARGET): process_manager.cpp
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ Process Manager..."
-	$(CXX) $(CXXFLAGS) -o$(PRM_TARGET) process_manager.cpp
+	$(CXX) $(CXXFLAGS) -o $(PRM_TARGET) process_manager.cpp
 
 $(SES_TARGET): system_event_service.cpp
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ System Event Service..."
-	$(CXX) $(CXXFLAGS) -o$(SES_TARGET) system_event_service.cpp
+	$(CXX) $(CXXFLAGS) -o $(SES_TARGET) system_event_service.cpp
 
 $(COMP_TARGET): compositor.cpp compositor.h
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ Graphics Compositor..."
-	$(CXX) $(CXXFLAGS) -o$(COMP_TARGET) compositor.cpp
+	$(CXX) $(CXXFLAGS) -o $(COMP_TARGET) compositor.cpp
+
+$(DS_TARGET): desktop_shell.cpp
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Desktop Shell..."
+	$(CXX) $(CXXFLAGS) -o $(DS_TARGET) desktop_shell.cpp
 
 clean:
-	@rm -f $(INIT_TARGET)$(SM_TARGET) $(DM_TARGET)$(SESS_TARGET) $(UM_TARGET)$(PM_TARGET) $(CS_TARGET)$(LS_TARGET) $(STM_TARGET)$(NM_TARGET) $(UPM_TARGET)$(NS_TARGET) $(AM_TARGET)$(PRM_TARGET) $(SES_TARGET)$(COMP_TARGET)
+	@rm -f $(INIT_TARGET) $(SM_TARGET) $(DM_TARGET) $(SESS_TARGET) $(UM_TARGET) $(PM_TARGET) $(CS_TARGET) $(LS_TARGET) $(STM_TARGET) $(NM_TARGET) $(UPM_TARGET) $(NS_TARGET) $(AM_TARGET) $(PRM_TARGET) $(SES_TARGET) $(COMP_TARGET) $(DS_TARGET)
