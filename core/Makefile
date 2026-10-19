@@ -363,3 +363,16 @@ $(DEV_IDE_TARGET):$(DEV_IDE_SRCS)
 
 # Append to all target
 all: $(DEV_IDE_TARGET)
+
+# Package Manager: Format Handler Target
+PKG_DIR := pkg
+PKG_FMT_TARGET := $(BUILD_DIR)/pkg_format
+PKG_FMT_SRCS := $(PKG_DIR)/package_format.cpp
+
+$(PKG_FMT_TARGET): $(PKG_FMT_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Package Format Parser..."
+	$(CXX) $(CXXFLAGS) -o $(PKG_FMT_TARGET) $(PKG_DIR)/package_format.cpp
+
+# Append to all target
+all: $(PKG_FMT_TARGET)
