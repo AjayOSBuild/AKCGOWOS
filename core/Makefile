@@ -388,3 +388,15 @@ $(PKG_META_TARGET): $(PKG_META_SRCS)
 
 # Append to all target
 all: $(PKG_META_TARGET)
+
+# Package Manager: Repository Manager Target
+PKG_REPO_TARGET := $(BUILD_DIR)/pkg_repo
+PKG_REPO_SRCS := $(PKG_DIR)/repository_format.cpp
+
+$(PKG_REPO_TARGET): $(PKG_REPO_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Package Repository Manager..."
+	$(CXX) $(CXXFLAGS) -o $(PKG_REPO_TARGET) $(PKG_DIR)/repository_format.cpp
+
+# Append to all target
+all: $(PKG_REPO_TARGET)
