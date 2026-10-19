@@ -42,3 +42,11 @@ The Virtual Filesystem (VFS) abstraction layer enforces fine-grained permission 
 ## 6. Dynamic Permission Broker & Access Control
 
 The Ring 3 `PermissionManager` daemon enforces runtime security boundaries through the `SecurityPolicyEngine`. When sandboxed application runtimes attempt to access sensitive system resources (such as external storage, location telemetry, or video input), the request is intercepted and evaluated against persistent Access Control Lists (ACLs). Unrecognized scopes trigger a synchronous user consent prompt, ensuring no application can acquire unauthorized hardware access.
+
+## 7. Process Sandboxing (Namespaces & Cgroups)
+
+The `ApplicationManager` and `SandboxManager` enforce strict OS-level isolation for all launched application binaries. When a process spawns, it is isolated using Linux namespaces:
+*   **PID Namespace:** Prevents the process from viewing or signaling host system processes.
+*   **Mount Namespace:** Restricts filesystem visibility to authorized volumes and sandboxed prefix directories.
+*   **Network & IPC Namespaces:** Isolates socket communications and shared memory IPC.
+*   **Control Groups (Cgroups v2):** Enforces hard resource ceilings (e.g., maximum memory allocation caps and CPU weight scheduling) to prevent denial-of-service conditions from misbehaving or malicious apps.
