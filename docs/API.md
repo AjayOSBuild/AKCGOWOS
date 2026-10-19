@@ -141,3 +141,20 @@ Manages safe deletion, staging, and restoration of files to prevent accidental d
     *   **Description:** Restores a trashed item back to its original path using recorded `.trashinfo` metadata.
 *   `EmptyTrash() -> Boolean`
     *   **Description:** Permanently deletes all items currently stored in the trash directory.
+
+## 9. Display Server Protocol API
+
+**Interface:** `os.core.DisplayServer`
+**Transport:** Unix Domain Sockets (`/run/os/display.sock`)
+
+Defines the Wayland-inspired protocol for client applications to negotiate window surfaces and submit rendered pixel buffers to the Compositor.
+
+### Methods
+
+*   `CreateSurface(String appName) -> Int32`
+    *   **Description:** Requests a new compositing surface from the display server.
+    *   **Returns:** A unique Surface ID.
+*   `AttachBuffer(Int32 surfaceId, FileDescriptor memfd, Int32 width, Int32 height) -> Boolean`
+    *   **Description:** Attaches a shared memory buffer (via POSIX `memfd`) containing the application's rendered pixels to the surface, enabling zero-copy graphics.
+*   `Commit(Int32 surfaceId) -> Boolean`
+    *   **Description:** Signals the compositor that the attached buffer is fully written and ready for the next screen render pass.
