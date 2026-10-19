@@ -266,3 +266,16 @@ $(SYS_SETTINGS_TARGET): ../utilities/system_settings.cpp ../utilities/system_set
 
 # Append to all target
 all: $(SYS_SETTINGS_TARGET)
+
+# Developer Environment: Compiler Manager Target
+DEV_DIR := dev
+DEV_CM_TARGET := $(BUILD_DIR)/compiler_manager
+DEV_SRCS := $(DEV_DIR)/compiler_manager.cpp
+
+$(DEV_CM_TARGET): $(DEV_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Compiler Manager Utility..."
+	$(CXX) $(CXXFLAGS) -o $(DEV_CM_TARGET) $(DEV_DIR)/compiler_manager.cpp
+
+# Append to all target
+all: $(DEV_CM_TARGET)
