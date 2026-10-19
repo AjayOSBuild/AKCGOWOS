@@ -14,6 +14,18 @@ struct InputEvent {
     bool pressed; // Key/Button state
 };
 
+struct HardwareCursor {
+    int x = 0, y = 0;
+    bool visible = true;
+
+    void Move(int new_x, int new_y) {
+        x = new_x;
+        y = new_y;
+        // Native DRM implementation calls drmModeMoveCursor() here
+        std::cout << "[Compositor:DRM] Hardware cursor updated to absolute (" << x << "," << y << ")\n";
+    }
+};
+
 struct WindowSurface {
     int surface_id;
     std::string title;
@@ -41,6 +53,8 @@ struct WindowSurface {
         } else if (event.type == InputType::POINTER_CLICK) {
             std::cout << "[Window #" << surface_id << "] Received CLICK " << (event.pressed ? "DOWN" : "UP") 
                       << " at relative (" << event.x - x << "," << event.y - y << ")\n";
+        } else if (event.type == InputType::POINTER_MOVE) {
+            std::cout << "[Window #" << surface_id << "] Received HOVER at relative (" << event.x - x << "," << event.y - y << ")\n";
         }
     }
 };
@@ -49,6 +63,7 @@ class CompositorEngine {
 private:
     std::vector<WindowSurface> surfaces;
     int next_id = 1;
+    HardwareCursor cursor;
 
     void SortSurfaces() {
         std::sort(surfaces.begin(), surfaces.end(), [](const WindowSurface& a, const WindowSurface& b) {
@@ -58,7 +73,7 @@ private:
 
 public:
     CompositorEngine() {
-        std::cout << "[Compositor] Graphics engine initialized with Window Management & Input Routing.\n";
+        std::cout << "[Compositor] Graphics engine initialized with DRM Hardware Cursor support.\n";
     }
 
     int CreateWindow(const std::string& title, int x, int y, int width, int height) {
@@ -96,14 +111,29 @@ public:
     }
 
     void DispatchInputEvent(const InputEvent& event) {
-        // Find the focused window
+        // 1. Update standalone hardware cursor plane
+        if (event.type == InputType::POINTER_MOVE) {
+            cursor.Move(event.x, event.y);
+        }
+
+        // 2. Route the event to the focused window with bounding box checks
         for (auto& surf : surfaces) {
             if (surf.is_focused) {
-                surf.HandleInput(event);
+                if (event.type == InputType::POINTER_CLICK || event.type == InputType::POINTER_MOVE) {
+                     // Bounding box hit test
+                     if (event.x >= surf.x && event.x <= surf.x + surf.width &&
+                         event.y >= surf.y && event.y <= surf.y + surf.height) {
+                         surf.HandleInput(event);
+                     } else if (event.type == InputType::POINTER_CLICK) {
+                         std::cout << "[Compositor] Click outside bounds of focused window #" << surf.surface_id << "\n";
+                     }
+                } else {
+                    // Keyboard events go straight to focused window
+                    surf.HandleInput(event);
+                }
                 return;
             }
         }
-        std::cout << "[Compositor] Warning: Input dropped, no window is currently focused.\n";
     }
 
     void RenderFrame() {
