@@ -222,3 +222,14 @@ $(SYS_TM_TARGET): ../utilities/task_manager.cpp ../utilities/task_manager.h
 
 # Append to all target
 all: $(SYS_TM_TARGET)
+
+# System Device Manager Utility Target
+SYS_DM_TARGET := $(BUILD_DIR)/sys_device_manager
+
+$(SYS_DM_TARGET): ../utilities/device_manager.cpp ../utilities/device_manager.h
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling Advanced System Device Manager Utility..."
+	$(CXX) $(CXXFLAGS) -o $(SYS_DM_TARGET) ../utilities/device_manager.cpp
+
+# Append to all target
+all: $(SYS_DM_TARGET)
