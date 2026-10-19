@@ -291,3 +291,15 @@ $(DEV_GM_TARGET): $(DEV_GM_SRCS)
 
 # Append to all target
 all: $(DEV_GM_TARGET)
+
+# Developer Environment: GDB Manager Target
+DEV_GDB_TARGET := $(BUILD_DIR)/gdb_manager
+DEV_GDB_SRCS := $(DEV_DIR)/gdb_manager.cpp
+
+$(DEV_GDB_TARGET): $(DEV_GDB_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ GDB Debugger Manager..."
+	$(CXX) $(CXXFLAGS) -o $(DEV_GDB_TARGET) $(DEV_DIR)/gdb_manager.cpp
+
+# Append to all target
+all: $(DEV_GDB_TARGET)
