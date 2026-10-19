@@ -244,3 +244,14 @@ $(SYS_DMGMT_TARGET): ../utilities/disk_manager.cpp ../utilities/disk_manager.h
 
 # Append to all target
 all: $(SYS_DMGMT_TARGET)
+
+# System Terminal Utility Target
+SYS_TERM_TARGET := $(BUILD_DIR)/sys_terminal
+
+$(SYS_TERM_TARGET): ../utilities/system_terminal.cpp ../utilities/system_terminal.h
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling System Administration Terminal Utility..."
+	$(CXX) $(CXXFLAGS) -o $(SYS_TERM_TARGET) ../utilities/system_terminal.cpp
+
+# Append to all target
+all: $(SYS_TERM_TARGET)
