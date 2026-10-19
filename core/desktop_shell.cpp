@@ -5,6 +5,7 @@
 #include "taskbar_service.h"
 #include "system_tray.h"
 #include "start_menu.h"
+#include "notification_center.h"
 
 int main() {
     std::cout << "=== OS Project Desktop Shell (Ring 3) ===\n";
@@ -16,22 +17,27 @@ int main() {
     TaskbarService taskbar;
     SystemTray tray;
     StartMenu start_menu;
+    NotificationCenter notif_center;
 
     std::cout << "[+] Desktop Shell active. Ready to render workspace.\n";
 
-    // Simulate opening the start menu after 2 seconds
-    std::thread mock_input_thread([&start_menu]() {
+    // Simulate input and incoming IPC notifications
+    std::thread mock_events_thread([&start_menu, &notif_center]() {
         std::this_thread::sleep_for(std::chrono::seconds(2));
-        std::cout << "\n[Input Simulation] User clicked Start button...\n";
         start_menu.Toggle();
+        
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::cout << "\n[IPC Simulation] Incoming D-Bus alert from NetworkManager...\n";
+        notif_center.PushNotification("NetworkManager", "Wi-Fi Connected", "Successfully joined network.");
     });
-    mock_input_thread.detach();
+    mock_events_thread.detach();
 
     while (true) {
         // Render pass (Painter's algorithm: background -> taskbar -> overlays)
         taskbar.Render();
         tray.Render();
         start_menu.Render();
+        notif_center.Render();
         
         std::this_thread::sleep_for(std::chrono::milliseconds(16)); // Match compositor 60fps
     }
