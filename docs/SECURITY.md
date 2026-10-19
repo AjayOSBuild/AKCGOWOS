@@ -50,3 +50,7 @@ The `ApplicationManager` and `SandboxManager` enforce strict OS-level isolation 
 *   **Mount Namespace:** Restricts filesystem visibility to authorized volumes and sandboxed prefix directories.
 *   **Network & IPC Namespaces:** Isolates socket communications and shared memory IPC.
 *   **Control Groups (Cgroups v2):** Enforces hard resource ceilings (e.g., maximum memory allocation caps and CPU weight scheduling) to prevent denial-of-service conditions from misbehaving or malicious apps.
+
+## 8. D-Bus IPC Security Policy Enforcement
+
+Inter-process communication (IPC) across Ring 3 core services and applications is governed by the `DBusPolicyEngine`. Every method invocation routed over the system D-Bus daemon is inspected for sender UID and interface signatures. Unprivileged applications (UID >= 1000) are blocked from invoking privileged control methods—such as `SystemEventService.Shutdown` or `StorageManager.Mount`—preventing containerized or sandboxed apps from escalating privileges or disrupting system stability.
