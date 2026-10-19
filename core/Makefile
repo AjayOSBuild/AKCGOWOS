@@ -255,3 +255,14 @@ $(SYS_TERM_TARGET): ../utilities/system_terminal.cpp ../utilities/system_termina
 
 # Append to all target
 all: $(SYS_TERM_TARGET)
+
+# System Settings Utility Target
+SYS_SETTINGS_TARGET := $(BUILD_DIR)/sys_settings_app
+
+$(SYS_SETTINGS_TARGET): ../utilities/system_settings.cpp ../utilities/system_settings.h
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling Comprehensive System Settings Utility..."
+	$(CXX) $(CXXFLAGS) -o $(SYS_SETTINGS_TARGET) ../utilities/system_settings.cpp
+
+# Append to all target
+all: $(SYS_SETTINGS_TARGET)
