@@ -200,3 +200,14 @@ $(MP_TARGET): ../apps/media_player.cpp ../apps/media_player.h
 
 # Append to all target
 all: $(MP_TARGET)
+
+# Image Viewer App Target
+IV_TARGET := $(BUILD_DIR)/image_viewer
+
+$(IV_TARGET): ../apps/image_viewer.cpp ../apps/image_viewer.h
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Image Viewer App..."
+	$(CXX) $(CXXFLAGS) -o $(IV_TARGET) ../apps/image_viewer.cpp
+
+# Append to all target
+all: $(IV_TARGET)
