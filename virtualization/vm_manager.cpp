@@ -1,6 +1,7 @@
 #include "vm_manager.h"
 #include "virtual_disk.h"
 #include <iostream>
+#include <unistd.h>
 
 VmManager::VmManager() {
     std::cout << "[VmManager] Initializing Virtual Machine Manager...\n";
