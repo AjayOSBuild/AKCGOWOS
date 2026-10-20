@@ -13,6 +13,7 @@ g++ -Wall -Wextra -std=c++17 unit/framework_test.cpp -o "$BUILD_DIR/framework_te
 g++ -Wall -Wextra -std=c++17 unit/filesystem_test.cpp -o "$BUILD_DIR/filesystem_test"
 g++ -Wall -Wextra -std=c++17 unit/networking_test.cpp -o "$BUILD_DIR/networking_test"
 g++ -Wall -Wextra -std=c++17 unit/graphics_test.cpp -o "$BUILD_DIR/graphics_test"
+g++ -Wall -Wextra -std=c++17 unit/wincompat_test.cpp -o "$BUILD_DIR/wincompat_test"
 
 echo ""
 echo "[*] Running Unit Tests..."
@@ -20,6 +21,7 @@ echo "[*] Running Unit Tests..."
 "$BUILD_DIR/filesystem_test"
 "$BUILD_DIR/networking_test"
 "$BUILD_DIR/graphics_test"
+"$BUILD_DIR/wincompat_test"
 UNIT_EXIT=$?
 
 echo ""
@@ -28,6 +30,7 @@ cd integration
 ./fs_integration_test.sh
 ./net_integration_test.sh
 ./gfx_integration_test.sh
+./wincompat_integration_test.sh
 INT_EXIT=$?
 cd ..
 
