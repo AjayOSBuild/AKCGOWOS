@@ -544,3 +544,16 @@ $(PKG_CLI_TARGET): $(PKG_CLI_SRCS)
 
 # Append to all target
 all: $(PKG_CLI_TARGET)
+
+# Virtualization: Namespace Isolation Target
+VIRT_DIR := virt
+VIRT_NS_TARGET := $(BUILD_DIR)/namespace_isolation
+VIRT_NS_SRCS := $(VIRT_DIR)/namespace_isolation.cpp
+
+$(VIRT_NS_TARGET): $(VIRT_NS_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Container Namespace Isolation Module..."
+	$(CXX) $(CXXFLAGS) -o $(VIRT_NS_TARGET) $(VIRT_DIR)/namespace_isolation.cpp
+
+# Append to all target
+all: $(VIRT_NS_TARGET)
