@@ -3,7 +3,7 @@ set -e
 
 echo "[*] Nexus OS - Boot & Kernel Smoke Test"
 
-ISO_PATH="../build/nexus-os-installer.iso"
+ISO_PATH="../../build/nexus-os-installer.iso"
 LOG_FILE="../build/tests/boot_serial.log"
 TIMEOUT_SECS=10
 
