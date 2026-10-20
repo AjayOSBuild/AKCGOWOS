@@ -16,6 +16,7 @@ g++ -Wall -Wextra -std=c++17 unit/graphics_test.cpp -o "$BUILD_DIR/graphics_test
 g++ -Wall -Wextra -std=c++17 unit/wincompat_test.cpp -o "$BUILD_DIR/wincompat_test"
 g++ -Wall -Wextra -std=c++17 unit/android_test.cpp -o "$BUILD_DIR/android_test"
 g++ -Wall -Wextra -std=c++17 unit/security_test.cpp -o "$BUILD_DIR/security_test"
+g++ -Wall -Wextra -std=c++17 unit/package_manager_test.cpp -o "$BUILD_DIR/package_manager_test"
 
 echo ""
 echo "[*] Running Unit Tests..."
@@ -26,6 +27,7 @@ echo "[*] Running Unit Tests..."
 "$BUILD_DIR/wincompat_test"
 "$BUILD_DIR/android_test"
 "$BUILD_DIR/security_test"
+"$BUILD_DIR/package_manager_test"
 UNIT_EXIT=$?
 
 echo ""
@@ -37,6 +39,7 @@ cd integration
 ./wincompat_integration_test.sh
 ./android_integration_test.sh
 ./sec_integration_test.sh
+./pkg_integration_test.sh
 INT_EXIT=$?
 cd ..
 
