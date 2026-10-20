@@ -45,29 +45,38 @@ bool VmManager::SetResourceLimits(const std::string& vm_name, int cpu_quota_pct,
 
 bool VmManager::SnapshotVm(const std::string& vm_name, const std::string& snapshot_name) {
     auto config_it = vm_configs.find(vm_name);
+    if (config_it == vm_configs.end()) return false;
+    if (active_vms.find(vm_name) != active_vms.end() && active_vms[vm_name]->IsRunning()) {
+        std::cerr << "[!] Cannot safely snapshot VM '" << vm_name << "'. VM must be powered off.\n";
+        return false;
+    }
+    VirtualDiskManager disk_mgr;
+    std::cout << "[VmManager] Initiating offline snapshot '" << snapshot_name << "' for VM '" << vm_name << "'...\n";
+    bool success = true;
+    for (const auto& disk : config_it->second.disks) {
+        if (!disk_mgr.CreateSnapshot(disk, snapshot_name)) success = false;
+    }
+    if (success) std::cout << "[VmManager] VM snapshot successfully completed.\n";
+    return success;
+}
+
+bool VmManager::RestoreVm(const std::string& vm_name, const std::string& snapshot_name) {
+    auto config_it = vm_configs.find(vm_name);
     if (config_it == vm_configs.end()) {
         std::cerr << "[!] VM '" << vm_name << "' not found.\n";
         return false;
     }
-
     if (active_vms.find(vm_name) != active_vms.end() && active_vms[vm_name]->IsRunning()) {
-        std::cerr << "[!] Cannot safely snapshot VM '" << vm_name << "'. VM must be powered off for a consistent offline snapshot.\n";
+        std::cerr << "[!] Cannot restore VM '" << vm_name << "' while it is running. Power off first.\n";
         return false;
     }
-
     VirtualDiskManager disk_mgr;
-    std::cout << "[VmManager] Initiating offline snapshot '" << snapshot_name << "' for VM '" << vm_name << "'...\n";
-    
+    std::cout << "[VmManager] Initiating restore to snapshot '" << snapshot_name << "' for VM '" << vm_name << "'...\n";
     bool success = true;
     for (const auto& disk : config_it->second.disks) {
-        if (!disk_mgr.CreateSnapshot(disk, snapshot_name)) {
-            success = false;
-        }
+        if (!disk_mgr.RestoreSnapshot(disk, snapshot_name)) success = false;
     }
-
-    if (success) {
-        std::cout << "[VmManager] VM snapshot successfully completed.\n";
-    }
+    if (success) std::cout << "[VmManager] VM restore successfully completed.\n";
     return success;
 }
 
@@ -112,26 +121,30 @@ void VmManager::ListVms() const {
 }
 
 int main() {
-    std::cout << "=== OS Project VM Snapshot Utility ===\n";
+    std::cout << "=== OS Project VM Restore Utility ===\n";
     VirtualDiskManager disk_mgr;
     VmManager vm_mgr;
     
-    std::string test_disk = "/tmp/nexus_snap_test.qcow2";
+    std::string test_disk = "/tmp/nexus_restore_test.qcow2";
     disk_mgr.CreateDisk(test_disk, "5G");
 
-    vm_mgr.CreateVm("db-server", 2048, 2);
-    vm_mgr.AttachDisk("db-server", test_disk);
+    vm_mgr.CreateVm("worker-node", 2048, 2);
+    vm_mgr.AttachDisk("worker-node", test_disk);
     
-    std::cout << "\n[Test] Attempting offline snapshot...\n";
-    vm_mgr.SnapshotVm("db-server", "pre-update-backup");
+    std::cout << "\n[Test] Creating a baseline snapshot...\n";
+    vm_mgr.SnapshotVm("worker-node", "baseline-install");
     
-    vm_mgr.StartVm("db-server");
-    std::cout << "\n[Test] Attempting online snapshot (should fail for safety)...\n";
-    vm_mgr.SnapshotVm("db-server", "live-backup");
+    std::cout << "\n[Test] Attempting restore to baseline...\n";
+    vm_mgr.RestoreVm("worker-node", "baseline-install");
     
-    vm_mgr.StopVm("db-server");
+    vm_mgr.StartVm("worker-node");
+    
+    std::cout << "\n[Test] Attempting restore while running (should be blocked for safety)...\n";
+    vm_mgr.RestoreVm("worker-node", "baseline-install");
+    
+    vm_mgr.StopVm("worker-node");
     remove(test_disk.c_str());
     
-    std::cout << "[+] VM Snapshot testing completed.\n";
+    std::cout << "[+] VM Restore testing completed.\n";
     return 0;
 }

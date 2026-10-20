@@ -40,6 +40,7 @@ public:
 
     // Snapshot controls
     bool SnapshotVm(const std::string& vm_name, const std::string& snapshot_name);
+    bool RestoreVm(const std::string& vm_name, const std::string& snapshot_name);
 
     bool StartVm(const std::string& name);
     bool StopVm(const std::string& name);
