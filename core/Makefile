@@ -532,3 +532,15 @@ $(PKG_DAEMON_TARGET): $(PKG_DAEMON_SRCS)
 
 # Append to all target
 all: $(PKG_DAEMON_TARGET)
+
+# Package Manager: CLI Target
+PKG_CLI_TARGET := $(BUILD_DIR)/nexus-pkg
+PKG_CLI_SRCS := $(PKG_DIR)/package_cli.cpp
+
+$(PKG_CLI_TARGET): $(PKG_CLI_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Package Manager CLI (nexus-pkg)..."
+	$(CXX) $(CXXFLAGS) -o $(PKG_CLI_TARGET) $(PKG_DIR)/package_cli.cpp
+
+# Append to all target
+all: $(PKG_CLI_TARGET)
