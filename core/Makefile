@@ -705,3 +705,15 @@ $(AUD_HAL_TARGET): $(AUD_HAL_SRCS)
 
 # Append to all target
 all: $(AUD_HAL_TARGET)
+
+# Audio: Mixing Daemon Target
+AUD_MIX_TARGET := $(BUILD_DIR)/audio_mixer
+AUD_MIX_SRCS := $(AUD_DIR)/audio_mixer.cpp
+
+$(AUD_MIX_TARGET): $(AUD_MIX_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Audio Mixing Daemon..."
+	$(CXX) $(CXXFLAGS) -o $(AUD_MIX_TARGET) $(AUD_DIR)/audio_mixer.cpp
+
+# Append to all target
+all: $(AUD_MIX_TARGET)
