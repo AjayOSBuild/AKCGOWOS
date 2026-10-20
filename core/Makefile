@@ -643,3 +643,15 @@ $(NET_PF_TARGET): $(NET_PF_SRCS)
 
 # Append to all target
 all: $(NET_PF_TARGET)
+
+# Networking: Virtual Switch Target
+NET_VS_TARGET := $(BUILD_DIR)/virtual_switch
+NET_VS_SRCS := $(NET_DIR)/virtual_switch.cpp
+
+$(NET_VS_TARGET): $(NET_VS_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Virtual Switch (vSwitch)..."
+	$(CXX) $(CXXFLAGS) -o $(NET_VS_TARGET) $(NET_DIR)/virtual_switch.cpp
+
+# Append to all target
+all: $(NET_VS_TARGET)
