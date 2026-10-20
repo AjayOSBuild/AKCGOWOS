@@ -594,3 +594,15 @@ $(FS_LVM_TARGET): $(FS_LVM_SRCS)
 
 # Append to all target
 all: $(FS_LVM_TARGET)
+
+# Filesystem: Crypto Block Layer Target
+FS_CRYPTO_TARGET := $(BUILD_DIR)/crypto_block
+FS_CRYPTO_SRCS := $(FS_DIR)/crypto_block_layer.cpp
+
+$(FS_CRYPTO_TARGET): $(FS_CRYPTO_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Cryptographic Block Layer..."
+	$(CXX) $(CXXFLAGS) -o $(FS_CRYPTO_TARGET) $(FS_DIR)/crypto_block_layer.cpp
+
+# Append to all target
+all: $(FS_CRYPTO_TARGET)
