@@ -606,3 +606,15 @@ $(FS_CRYPTO_TARGET): $(FS_CRYPTO_SRCS)
 
 # Append to all target
 all: $(FS_CRYPTO_TARGET)
+
+# Filesystem: Journal Recovery Target
+FS_JOURNAL_TARGET := $(BUILD_DIR)/fs_journal
+FS_JOURNAL_SRCS := $(FS_DIR)/journal_recovery.cpp
+
+$(FS_JOURNAL_TARGET): $(FS_JOURNAL_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Journaling Recovery Engine..."
+	$(CXX) $(CXXFLAGS) -o $(FS_JOURNAL_TARGET) $(FS_DIR)/journal_recovery.cpp
+
+# Append to all target
+all: $(FS_JOURNAL_TARGET)
