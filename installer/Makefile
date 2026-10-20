@@ -35,3 +35,17 @@ $(INST_TARGET_TARGET): $(INST_TARGET_SRCS)
 
 clean:
 	rm -f $(INST_DISK_TARGET) $(INST_DISPLAY_TARGET) $(INST_TARGET_TARGET)
+
+INST_FS_TARGET = $(BUILD_DIR)/filesystem_creator
+INST_FS_SRCS = src/filesystem_creator.cpp
+
+# Append to all target
+all: $(INST_DISK_TARGET) $(INST_DISPLAY_TARGET) $(INST_TARGET_TARGET) $(INST_FS_TARGET)
+
+$(INST_FS_TARGET): $(INST_FS_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Filesystem Creator Utility..."
+	$(CXX) $(CXXFLAGS) -o $(INST_FS_TARGET) $(INST_FS_SRCS)
+
+clean:
+	rm -f $(INST_DISK_TARGET) $(INST_DISPLAY_TARGET) $(INST_TARGET_TARGET) $(INST_FS_TARGET)
