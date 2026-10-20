@@ -1,3 +1,4 @@
+#include <iomanip>
 #include "slot_manager.h"
 #include <iostream>
 #include <unistd.h>
