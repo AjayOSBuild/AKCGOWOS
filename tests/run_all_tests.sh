@@ -18,10 +18,11 @@ echo "[*] Running Unit Tests..."
 UNIT_EXIT=$?
 
 echo ""
-echo "[*] Running Smoke Tests (Mocked for QA-001)..."
-# Future QEMU boot test integration goes here
-echo "[PASS] QEMU Virtual Environment verification"
-SMOKE_EXIT=0
+echo "[*] Running Smoke Tests..."
+cd smoke
+./boot_test.sh
+SMOKE_EXIT=$?
+cd ..
 
 echo ""
 echo "============================================================"
