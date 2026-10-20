@@ -12,15 +12,14 @@ echo "[*] Compiling Unit Tests..."
 g++ -Wall -Wextra -std=c++17 unit/framework_test.cpp -o "$BUILD_DIR/framework_test"
 g++ -Wall -Wextra -std=c++17 unit/filesystem_test.cpp -o "$BUILD_DIR/filesystem_test"
 g++ -Wall -Wextra -std=c++17 unit/networking_test.cpp -o "$BUILD_DIR/networking_test"
+g++ -Wall -Wextra -std=c++17 unit/graphics_test.cpp -o "$BUILD_DIR/graphics_test"
 
 echo ""
-echo "[*] Running Base Framework Tests..."
+echo "[*] Running Unit Tests..."
 "$BUILD_DIR/framework_test"
-
-echo ""
-echo "[*] Running Unit Tests (Filesystem & Networking)..."
 "$BUILD_DIR/filesystem_test"
 "$BUILD_DIR/networking_test"
+"$BUILD_DIR/graphics_test"
 UNIT_EXIT=$?
 
 echo ""
@@ -28,6 +27,7 @@ echo "[*] Running Integration Tests..."
 cd integration
 ./fs_integration_test.sh
 ./net_integration_test.sh
+./gfx_integration_test.sh
 INT_EXIT=$?
 cd ..
 
@@ -40,7 +40,7 @@ cd ..
 
 echo ""
 echo "============================================================"
-if [ $UNIT_EXIT -eq 0 ] && [ $INT_EXIT -eq 0 ] && [$SMOKE_EXIT -eq 0 ]; then
+if [ $UNIT_EXIT -eq 0 ] && [ $INT_EXIT -eq 0 ] && [ $SMOKE_EXIT -eq 0 ]; then
     echo "STATUS: ALL TEST SUITES PASSED SUCCESSFULLY."
     exit 0
 else
