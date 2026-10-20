@@ -655,3 +655,16 @@ $(NET_VS_TARGET): $(NET_VS_SRCS)
 
 # Append to all target
 all: $(NET_VS_TARGET)
+
+# Display Server Target
+UI_DIR := ui
+UI_DS_TARGET := $(BUILD_DIR)/display_server
+UI_DS_SRCS := $(UI_DIR)/display_server.cpp
+
+$(UI_DS_TARGET): $(UI_DS_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Display Server IPC Engine..."
+	$(CXX) $(CXXFLAGS) -o $(UI_DS_TARGET) $(UI_DIR)/display_server.cpp
+
+# Append to all target
+all: $(UI_DS_TARGET)
