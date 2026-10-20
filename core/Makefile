@@ -581,3 +581,16 @@ $(VIRT_VDM_TARGET):$(VIRT_VDM_SRCS)
 
 # Append to all target
 all: $(VIRT_VDM_TARGET)
+
+# Filesystem: LVM Target
+FS_DIR := fs
+FS_LVM_TARGET := $(BUILD_DIR)/lvm_manager
+FS_LVM_SRCS := $(FS_DIR)/lvm_manager.cpp
+
+$(FS_LVM_TARGET): $(FS_LVM_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Logical Volume Manager..."
+	$(CXX) $(CXXFLAGS) -o $(FS_LVM_TARGET) $(FS_DIR)/lvm_manager.cpp
+
+# Append to all target
+all: $(FS_LVM_TARGET)
