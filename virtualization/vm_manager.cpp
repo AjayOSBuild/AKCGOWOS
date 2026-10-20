@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <sstream>
 #include <cstdlib>
+#include <unistd.h>
 
 VmManager::VmManager() {
     std::cout << "[VmManager] Initializing Virtual Machine Manager (Networking Enabled)...\n";
