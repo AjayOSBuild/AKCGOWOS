@@ -5,12 +5,20 @@ BUILD_DIR = ../build
 VM_QEMU_TARGET = $(BUILD_DIR)/qemu_wrapper
 VM_QEMU_SRCS = qemu_wrapper.cpp
 
-all: $(VM_QEMU_TARGET)
+VM_MGR_TARGET = $(BUILD_DIR)/vm_manager
+VM_MGR_SRCS = vm_manager.cpp qemu_wrapper.cpp
+
+all: $(VM_QEMU_TARGET) $(VM_MGR_TARGET)
 
 $(VM_QEMU_TARGET): $(VM_QEMU_SRCS)
 	@mkdir -p $(BUILD_DIR)
 	@echo "[*] Compiling C++ QEMU Wrapper..."
 	$(CXX) $(CXXFLAGS) -o $(VM_QEMU_TARGET) $(VM_QEMU_SRCS)
 
+$(VM_MGR_TARGET): $(VM_MGR_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ VM Manager..."
+	$(CXX) $(CXXFLAGS) -o $(VM_MGR_TARGET) $(VM_MGR_SRCS)
+
 clean:
-	rm -f $(VM_QEMU_TARGET)
+	rm -f $(VM_QEMU_TARGET) $(VM_MGR_TARGET)
