@@ -692,3 +692,16 @@ $(UI_IN_TARGET): $(UI_IN_SRCS)
 
 # Append to all target
 all: $(UI_IN_TARGET)
+
+# Audio: Hardware Abstraction Layer Target
+AUD_DIR := aud
+AUD_HAL_TARGET := $(BUILD_DIR)/audio_hal
+AUD_HAL_SRCS := $(AUD_DIR)/audio_hal.cpp
+
+$(AUD_HAL_TARGET): $(AUD_HAL_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Audio Hardware Abstraction Layer..."
+	$(CXX) $(CXXFLAGS) -o $(AUD_HAL_TARGET) $(AUD_DIR)/audio_hal.cpp
+
+# Append to all target
+all: $(AUD_HAL_TARGET)
