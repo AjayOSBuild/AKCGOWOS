@@ -618,3 +618,16 @@ $(FS_JOURNAL_TARGET): $(FS_JOURNAL_SRCS)
 
 # Append to all target
 all: $(FS_JOURNAL_TARGET)
+
+# Networking: Interface Manager Target
+NET_DIR := net
+NET_IF_TARGET := $(BUILD_DIR)/interface_manager
+NET_IF_SRCS := $(NET_DIR)/interface_manager.cpp
+
+$(NET_IF_TARGET): $(NET_IF_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Network Interface Manager..."
+	$(CXX) $(CXXFLAGS) -o $(NET_IF_TARGET) $(NET_DIR)/interface_manager.cpp
+
+# Append to all target
+all: $(NET_IF_TARGET)
