@@ -557,3 +557,15 @@ $(VIRT_NS_TARGET): $(VIRT_NS_SRCS)
 
 # Append to all target
 all: $(VIRT_NS_TARGET)
+
+# Virtualization: Cgroups Controller Target
+VIRT_CG_TARGET := $(BUILD_DIR)/cgroups_controller
+VIRT_CG_SRCS := $(VIRT_DIR)/cgroups_controller.cpp
+
+$(VIRT_CG_TARGET): $(VIRT_CG_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Cgroups v2 Resource Controller..."
+	$(CXX) $(CXXFLAGS) -o $(VIRT_CG_TARGET) $(VIRT_DIR)/cgroups_controller.cpp
+
+# Append to all target
+all: $(VIRT_CG_TARGET)
