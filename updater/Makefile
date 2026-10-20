@@ -11,7 +11,10 @@ UP_SIG_SRCS = signature_verifier.cpp
 UP_SLOT_TARGET = $(BUILD_DIR)/slot_manager
 UP_SLOT_SRCS = slot_manager.cpp
 
-all: $(UP_CLIENT_TARGET) $(UP_SIG_TARGET) $(UP_SLOT_TARGET)
+UP_DELTA_TARGET = $(BUILD_DIR)/delta_patcher
+UP_DELTA_SRCS = delta_patcher.cpp
+
+all: $(UP_CLIENT_TARGET) $(UP_SIG_TARGET) $(UP_SLOT_TARGET) $(UP_DELTA_TARGET)
 
 $(UP_CLIENT_TARGET): $(UP_CLIENT_SRCS)
 	@mkdir -p $(BUILD_DIR)
@@ -28,5 +31,10 @@ $(UP_SLOT_TARGET): $(UP_SLOT_SRCS)
 	@echo "[*] Compiling C++ A/B Slot Manager..."
 	$(CXX) $(CXXFLAGS) -o $(UP_SLOT_TARGET) $(UP_SLOT_SRCS)
 
+$(UP_DELTA_TARGET): $(UP_DELTA_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Delta Patcher..."
+	$(CXX) $(CXXFLAGS) -o $(UP_DELTA_TARGET) $(UP_DELTA_SRCS)
+
 clean:
-	rm -f $(UP_CLIENT_TARGET) $(UP_SIG_TARGET) $(UP_SLOT_TARGET)
+	rm -f $(UP_CLIENT_TARGET) $(UP_SIG_TARGET) $(UP_SLOT_TARGET) $(UP_DELTA_TARGET)
