@@ -32,3 +32,45 @@ clean:
 	rm -rf $(BUILD_DIR)/*
 	# $(MAKE) -C boot clean
 	$(MAKE) -C kernel clean
+
+UP_SIG_TARGET = $(BUILD_DIR)/signature_verifier
+UP_SIG_SRCS = signature_verifier.cpp
+
+# Append to all target
+all: $(UP_CLIENT_TARGET) $(UP_SIG_TARGET)
+
+$(UP_SIG_TARGET): $(UP_SIG_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Signature Verifier..."
+	$(CXX) $(CXXFLAGS) -o $(UP_SIG_TARGET) $(UP_SIG_SRCS)
+
+clean:
+	rm -f $(UP_CLIENT_TARGET) $(UP_SIG_TARGET)
+
+UP_SIG_TARGET = $(BUILD_DIR)/signature_verifier
+UP_SIG_SRCS = signature_verifier.cpp
+
+# Append to all target
+all: $(UP_CLIENT_TARGET) $(UP_SIG_TARGET)
+
+$(UP_SIG_TARGET): $(UP_SIG_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Signature Verifier..."
+	$(CXX) $(CXXFLAGS) -o $(UP_SIG_TARGET) $(UP_SIG_SRCS)
+
+clean:
+	rm -f $(UP_CLIENT_TARGET) $(UP_SIG_TARGET)
+
+UP_SIG_TARGET = $(BUILD_DIR)/signature_verifier
+UP_SIG_SRCS = signature_verifier.cpp
+
+# Append to all target
+all: $(UP_CLIENT_TARGET) $(UP_SIG_TARGET)
+
+$(UP_SIG_TARGET): $(UP_SIG_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Signature Verifier..."
+	$(CXX) $(CXXFLAGS) -o $(UP_SIG_TARGET) $(UP_SIG_SRCS)
+
+clean:
+	rm -f $(UP_CLIENT_TARGET) $(UP_SIG_TARGET)
