@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 VmManager::VmManager() {
-    std::cout << "[VmManager] Initializing Virtual Machine Manager (Resource Limits Enabled)...\n";
+    std::cout << "[VmManager] Initializing Virtual Machine Manager...\n";
     srand(time(nullptr));
 }
 
@@ -25,33 +25,55 @@ bool VmManager::CreateVm(const std::string& name, int memory_mb, int cpus, const
 }
 
 bool VmManager::AttachDisk(const std::string& vm_name, const std::string& disk_path) {
-    auto it = vm_configs.find(vm_name);
-    if (it == vm_configs.end()) return false;
-    it->second.disks.push_back(disk_path);
+    if (vm_configs.find(vm_name) == vm_configs.end()) return false;
+    vm_configs[vm_name].disks.push_back(disk_path);
     return true;
 }
 
 bool VmManager::AttachNetwork(const std::string& vm_name, const std::string& type, const std::string& bridge) {
-    auto it = vm_configs.find(vm_name);
-    if (it == vm_configs.end()) return false;
-    it->second.networks.push_back({type, GenerateRandomMac(), bridge});
+    if (vm_configs.find(vm_name) == vm_configs.end()) return false;
+    vm_configs[vm_name].networks.push_back({type, GenerateRandomMac(), bridge});
     return true;
 }
 
 bool VmManager::SetResourceLimits(const std::string& vm_name, int cpu_quota_pct, int mem_limit_mb) {
-    auto it = vm_configs.find(vm_name);
-    if (it == vm_configs.end()) return false;
-    it->second.cpu_quota_pct = cpu_quota_pct;
-    it->second.hard_mem_limit_mb = mem_limit_mb;
-    std::cout << "[VmManager] Configured limits for '" << vm_name << "': CPU " 
-              << cpu_quota_pct << "%, RAM " << mem_limit_mb << " MB\n";
+    if (vm_configs.find(vm_name) == vm_configs.end()) return false;
+    vm_configs[vm_name].cpu_quota_pct = cpu_quota_pct;
+    vm_configs[vm_name].hard_mem_limit_mb = mem_limit_mb;
     return true;
+}
+
+bool VmManager::SnapshotVm(const std::string& vm_name, const std::string& snapshot_name) {
+    auto config_it = vm_configs.find(vm_name);
+    if (config_it == vm_configs.end()) {
+        std::cerr << "[!] VM '" << vm_name << "' not found.\n";
+        return false;
+    }
+
+    if (active_vms.find(vm_name) != active_vms.end() && active_vms[vm_name]->IsRunning()) {
+        std::cerr << "[!] Cannot safely snapshot VM '" << vm_name << "'. VM must be powered off for a consistent offline snapshot.\n";
+        return false;
+    }
+
+    VirtualDiskManager disk_mgr;
+    std::cout << "[VmManager] Initiating offline snapshot '" << snapshot_name << "' for VM '" << vm_name << "'...\n";
+    
+    bool success = true;
+    for (const auto& disk : config_it->second.disks) {
+        if (!disk_mgr.CreateSnapshot(disk, snapshot_name)) {
+            success = false;
+        }
+    }
+
+    if (success) {
+        std::cout << "[VmManager] VM snapshot successfully completed.\n";
+    }
+    return success;
 }
 
 bool VmManager::StartVm(const std::string& name) {
     auto config_it = vm_configs.find(name);
     if (config_it == vm_configs.end() || (active_vms.find(name) != active_vms.end() && active_vms[name]->IsRunning())) return false;
-
     const VmConfig& config = config_it->second;
     std::string binary = (config.architecture == "x86_64") ? "/usr/bin/qemu-system-x86_64" : "/usr/bin/qemu-system-aarch64";
     auto wrapper = std::make_shared<QemuWrapper>(binary);
@@ -63,13 +85,9 @@ bool VmManager::StartVm(const std::string& name) {
 
     if (wrapper->Start()) {
         active_vms[name] = wrapper;
-        std::cout << "[VmManager] VM '" << name << "' started successfully.\n";
-        
-        // Apply cgroup limits to the newly spawned QEMU PID
         if (config.cpu_quota_pct > 0 || config.hard_mem_limit_mb > 0) {
             cgroup_mgr.ApplyLimits(name, wrapper->GetPid(), config.cpu_quota_pct, config.hard_mem_limit_mb);
         }
-        
         return true;
     }
     return false;
@@ -88,27 +106,32 @@ bool VmManager::StopVm(const std::string& name) {
 void VmManager::ListVms() const {
     std::cout << "\n--- Configured Virtual Machines ---\n";
     for (const auto& pair : vm_configs) {
-        std::cout << "- " << pair.second.name << " | Limits -> CPU: " 
-                  << (pair.second.cpu_quota_pct ? std::to_string(pair.second.cpu_quota_pct) + "%" : "Uncapped")
-                  << ", RAM: " << (pair.second.hard_mem_limit_mb ? std::to_string(pair.second.hard_mem_limit_mb) + "MB" : "Uncapped") << "\n";
+        std::cout << "- " << pair.second.name << " | Disks attached: " << pair.second.disks.size() << "\n";
     }
     std::cout << "-----------------------------------\n\n";
 }
 
 int main() {
-    std::cout << "=== OS Project VM Resource Limits Utility ===\n";
+    std::cout << "=== OS Project VM Snapshot Utility ===\n";
+    VirtualDiskManager disk_mgr;
     VmManager vm_mgr;
     
-    vm_mgr.CreateVm("restricted-node", 1024, 2);
-    // Constrain to 50% CPU time and hard limit to 1200MB RAM to prevent OOM kills impacting the host
-    vm_mgr.SetResourceLimits("restricted-node", 50, 1200); 
+    std::string test_disk = "/tmp/nexus_snap_test.qcow2";
+    disk_mgr.CreateDisk(test_disk, "5G");
+
+    vm_mgr.CreateVm("db-server", 2048, 2);
+    vm_mgr.AttachDisk("db-server", test_disk);
     
-    vm_mgr.ListVms();
-    vm_mgr.StartVm("restricted-node");
+    std::cout << "\n[Test] Attempting offline snapshot...\n";
+    vm_mgr.SnapshotVm("db-server", "pre-update-backup");
     
-    sleep(1);
-    vm_mgr.StopVm("restricted-node");
+    vm_mgr.StartVm("db-server");
+    std::cout << "\n[Test] Attempting online snapshot (should fail for safety)...\n";
+    vm_mgr.SnapshotVm("db-server", "live-backup");
     
-    std::cout << "[+] VM Resource Limits testing completed.\n";
+    vm_mgr.StopVm("db-server");
+    remove(test_disk.c_str());
+    
+    std::cout << "[+] VM Snapshot testing completed.\n";
     return 0;
 }
