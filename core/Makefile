@@ -668,3 +668,15 @@ $(UI_DS_TARGET): $(UI_DS_SRCS)
 
 # Append to all target
 all: $(UI_DS_TARGET)
+
+# Display Server: Window Compositor Target
+UI_COMP_TARGET := $(BUILD_DIR)/window_compositor
+UI_COMP_SRCS := $(UI_DIR)/window_compositor.cpp
+
+$(UI_COMP_TARGET): $(UI_COMP_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Window Compositor Engine..."
+	$(CXX) $(CXXFLAGS) -o $(UI_COMP_TARGET) $(UI_DIR)/window_compositor.cpp
+
+# Append to all target
+all: $(UI_COMP_TARGET)
