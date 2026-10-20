@@ -717,3 +717,15 @@ $(AUD_MIX_TARGET): $(AUD_MIX_SRCS)
 
 # Append to all target
 all: $(AUD_MIX_TARGET)
+
+# Audio: DSP Engine Target
+AUD_DSP_TARGET := $(BUILD_DIR)/dsp_engine
+AUD_DSP_SRCS := $(AUD_DIR)/dsp_engine.cpp
+
+$(AUD_DSP_TARGET): $(AUD_DSP_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ DSP Engine & Equalizer..."
+	$(CXX) $(CXXFLAGS) -o $(AUD_DSP_TARGET) $(AUD_DIR)/dsp_engine.cpp
+
+# Append to all target
+all: $(AUD_DSP_TARGET)
