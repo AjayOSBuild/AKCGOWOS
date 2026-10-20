@@ -680,3 +680,15 @@ $(UI_COMP_TARGET): $(UI_COMP_SRCS)
 
 # Append to all target
 all: $(UI_COMP_TARGET)
+
+# Display Server: Input Router Target
+UI_IN_TARGET := $(BUILD_DIR)/input_router
+UI_IN_SRCS := $(UI_DIR)/input_router.cpp
+
+$(UI_IN_TARGET): $(UI_IN_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Input Event Router..."
+	$(CXX) $(CXXFLAGS) -o $(UI_IN_TARGET) $(UI_DIR)/input_router.cpp
+
+# Append to all target
+all: $(UI_IN_TARGET)
