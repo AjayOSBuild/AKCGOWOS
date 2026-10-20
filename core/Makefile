@@ -569,3 +569,15 @@ $(VIRT_CG_TARGET): $(VIRT_CG_SRCS)
 
 # Append to all target
 all: $(VIRT_CG_TARGET)
+
+# Virtualization: Virtual Disk Manager Target
+VIRT_VDM_TARGET := $(BUILD_DIR)/virtual_disk_manager
+VIRT_VDM_SRCS := $(VIRT_DIR)/virtual_disk_manager.cpp
+
+$(VIRT_VDM_TARGET):$(VIRT_VDM_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Virtual Disk Manager..."
+	$(CXX)$(CXXFLAGS) -o $(VIRT_VDM_TARGET)$(VIRT_DIR)/virtual_disk_manager.cpp
+
+# Append to all target
+all: $(VIRT_VDM_TARGET)
