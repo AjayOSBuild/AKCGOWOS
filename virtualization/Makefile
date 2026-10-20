@@ -6,7 +6,7 @@ VM_QEMU_TARGET = $(BUILD_DIR)/qemu_wrapper
 VM_QEMU_SRCS = qemu_wrapper.cpp
 
 VM_MGR_TARGET = $(BUILD_DIR)/vm_manager
-VM_MGR_SRCS = vm_manager.cpp qemu_wrapper.cpp virtual_disk.cpp
+VM_MGR_SRCS = vm_manager.cpp qemu_wrapper.cpp virtual_disk.cpp cgroup_manager.cpp
 
 all: $(VM_QEMU_TARGET) $(VM_MGR_TARGET)
 
@@ -17,7 +17,7 @@ $(VM_QEMU_TARGET): $(VM_QEMU_SRCS)
 
 $(VM_MGR_TARGET): $(VM_MGR_SRCS)
 	@mkdir -p $(BUILD_DIR)
-	@echo "[*] Compiling C++ VM Manager with Virtual Disk Support..."
+	@echo "[*] Compiling C++ VM Manager with Cgroup Resource Limits..."
 	$(CXX) $(CXXFLAGS) -o $(VM_MGR_TARGET) $(VM_MGR_SRCS)
 
 clean:
