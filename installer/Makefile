@@ -21,3 +21,17 @@ $(INST_DISPLAY_TARGET): $(INST_DISPLAY_SRCS)
 
 clean:
 	rm -f $(INST_DISK_TARGET) $(INST_DISPLAY_TARGET)
+
+INST_TARGET_TARGET = $(BUILD_DIR)/target_selector
+INST_TARGET_SRCS = src/target_selector.cpp src/disk_discovery.cpp
+
+# Append to all target
+all: $(INST_DISK_TARGET) $(INST_DISPLAY_TARGET) $(INST_TARGET_TARGET)
+
+$(INST_TARGET_TARGET): $(INST_TARGET_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Target Selector Utility..."
+	$(CXX) $(CXXFLAGS) -o $(INST_TARGET_TARGET) $(INST_TARGET_SRCS)
+
+clean:
+	rm -f $(INST_DISK_TARGET) $(INST_DISPLAY_TARGET) $(INST_TARGET_TARGET)
