@@ -1,26 +1,47 @@
 #include "vm_manager.h"
 #include "virtual_disk.h"
 #include <iostream>
-#include <unistd.h>
+#include <iomanip>
+#include <sstream>
+#include <cstdlib>
 
 VmManager::VmManager() {
-    std::cout << "[VmManager] Initializing Virtual Machine Manager...\n";
+    std::cout << "[VmManager] Initializing Virtual Machine Manager (Networking Enabled)...\n";
+    srand(time(nullptr));
+}
+
+std::string VmManager::GenerateRandomMac() const {
+    std::stringstream ss;
+    ss << "52:54:00"; // Standard KVM/QEMU OUI
+    for (int i = 0; i < 3; ++i) {
+        ss << ":" << std::setfill('0') << std::setw(2) << std::hex << (rand() % 256);
+    }
+    return ss.str();
 }
 
 bool VmManager::CreateVm(const std::string& name, int memory_mb, int cpus, const std::string& arch) {
     if (vm_configs.find(name) != vm_configs.end()) return false;
-    vm_configs[name] = {name, memory_mb, cpus, arch, {}};
+    vm_configs[name] = {name, memory_mb, cpus, arch, {}, {}};
     return true;
 }
 
 bool VmManager::AttachDisk(const std::string& vm_name, const std::string& disk_path) {
     auto it = vm_configs.find(vm_name);
+    if (it == vm_configs.end()) return false;
+    it->second.disks.push_back(disk_path);
+    return true;
+}
+
+bool VmManager::AttachNetwork(const std::string& vm_name, const std::string& type, const std::string& bridge) {
+    auto it = vm_configs.find(vm_name);
     if (it == vm_configs.end()) {
         std::cerr << "[!] VM '" << vm_name << "' not found.\n";
         return false;
     }
-    it->second.disks.push_back(disk_path);
-    std::cout << "[VmManager] Attached disk '" << disk_path << "' to VM '" << vm_name << "'.\n";
+    
+    std::string mac = GenerateRandomMac();
+    it->second.networks.push_back({type, mac, bridge});
+    std::cout << "[VmManager] Attached '" << type << "' network interface (MAC: " << mac << ") to VM '" << vm_name << "'.\n";
     return true;
 }
 
@@ -42,10 +63,28 @@ bool VmManager::StartVm(const std::string& name) {
         wrapper->AddArgument("-drive");
         wrapper->AddArgument("file=" + disk + ",format=qcow2,if=virtio");
     }
+    
+    // Attach network interfaces
+    int net_idx = 0;
+    for (const auto& net : config.networks) {
+        std::string net_id = "net" + std::to_string(net_idx++);
+        
+        if (net.type == "user") {
+            wrapper->AddArgument("-netdev");
+            wrapper->AddArgument("user,id=" + net_id);
+        } else if (net.type == "tap") {
+            wrapper->AddArgument("-netdev");
+            wrapper->AddArgument("tap,id=" + net_id + ",br=" + net.bridge_name + ",helper=/usr/libexec/qemu-bridge-helper");
+        }
+        
+        wrapper->AddArgument("-device");
+        wrapper->AddArgument("virtio-net-pci,netdev=" + net_id + ",mac=" + net.mac_address);
+    }
 
     if (wrapper->Start()) {
         active_vms[name] = wrapper;
-        std::cout << "[VmManager] VM '" << name << "' started successfully with " << config.disks.size() << " disk(s).\n";
+        std::cout << "[VmManager] VM '" << name << "' started successfully with " 
+                  << config.networks.size() << " network interface(s).\n";
         return true;
     }
     return false;
@@ -64,33 +103,28 @@ void VmManager::ListVms() const {
     std::cout << "\n--- Configured Virtual Machines ---\n";
     for (const auto& pair : vm_configs) {
         const VmConfig& c = pair.second;
-        std::cout << "- " << c.name << " | Disks: " << c.disks.size() << "\n";
+        std::cout << "- " << c.name << " | Disks: " << c.disks.size() 
+                  << " | Networks: " << c.networks.size() << "\n";
     }
     std::cout << "-----------------------------------\n\n";
 }
 
 int main() {
-    std::cout << "=== OS Project VM Disk Subsystem Utility ===\n";
-    VirtualDiskManager disk_mgr;
+    std::cout << "=== OS Project VM Networking Subsystem Utility ===\n";
     VmManager vm_mgr;
     
-    std::string test_disk = "/tmp/nexus_test_vm.qcow2";
-    disk_mgr.CreateDisk(test_disk, "10G");
-
-    vm_mgr.CreateVm("storage-node", 1024, 2);
-    vm_mgr.AttachDisk("storage-node", test_disk);
+    vm_mgr.CreateVm("net-node", 1024, 2);
+    
+    // Attach a standard NAT interface and a Bridged interface
+    vm_mgr.AttachNetwork("net-node", "user");
+    vm_mgr.AttachNetwork("net-node", "tap", "nexus-br0");
+    
     vm_mgr.ListVms();
     
-    vm_mgr.StartVm("storage-node");
+    vm_mgr.StartVm("net-node");
+    sleep(1);
+    vm_mgr.StopVm("net-node");
     
-    std::cout << "[+] Allowing VM to boot and mount virtio block device...\n";
-    sleep(2);
-    
-    vm_mgr.StopVm("storage-node");
-    
-    // Cleanup mock disk
-    remove(test_disk.c_str());
-    
-    std::cout << "[+] VM Disk testing completed.\n";
+    std::cout << "[+] VM Networking testing completed.\n";
     return 0;
 }
