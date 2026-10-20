@@ -8,7 +8,10 @@ UP_CLIENT_SRCS = update_client.cpp
 UP_SIG_TARGET = $(BUILD_DIR)/signature_verifier
 UP_SIG_SRCS = signature_verifier.cpp
 
-all: $(UP_CLIENT_TARGET) $(UP_SIG_TARGET)
+UP_SLOT_TARGET = $(BUILD_DIR)/slot_manager
+UP_SLOT_SRCS = slot_manager.cpp
+
+all: $(UP_CLIENT_TARGET) $(UP_SIG_TARGET) $(UP_SLOT_TARGET)
 
 $(UP_CLIENT_TARGET): $(UP_CLIENT_SRCS)
 	@mkdir -p $(BUILD_DIR)
@@ -20,5 +23,10 @@ $(UP_SIG_TARGET): $(UP_SIG_SRCS)
 	@echo "[*] Compiling C++ Signature Verifier..."
 	$(CXX) $(CXXFLAGS) -o $(UP_SIG_TARGET) $(UP_SIG_SRCS)
 
+$(UP_SLOT_TARGET): $(UP_SLOT_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ A/B Slot Manager..."
+	$(CXX) $(CXXFLAGS) -o $(UP_SLOT_TARGET) $(UP_SLOT_SRCS)
+
 clean:
-	rm -f $(UP_CLIENT_TARGET) $(UP_SIG_TARGET)
+	rm -f $(UP_CLIENT_TARGET) $(UP_SIG_TARGET) $(UP_SLOT_TARGET)
