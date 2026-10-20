@@ -631,3 +631,15 @@ $(NET_IF_TARGET): $(NET_IF_SRCS)
 
 # Append to all target
 all: $(NET_IF_TARGET)
+
+# Networking: Packet Filter Target
+NET_PF_TARGET := $(BUILD_DIR)/packet_filter
+NET_PF_SRCS := $(NET_DIR)/packet_filter.cpp
+
+$(NET_PF_TARGET): $(NET_PF_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@echo "[*] Compiling C++ Packet Filter & Firewall..."
+	$(CXX) $(CXXFLAGS) -o $(NET_PF_TARGET) $(NET_DIR)/packet_filter.cpp
+
+# Append to all target
+all: $(NET_PF_TARGET)
